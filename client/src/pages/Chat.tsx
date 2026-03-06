@@ -152,52 +152,48 @@ export default function Chat() {
         ) : messages.length === 0 ? (
           <div className={useThemeCard ? 'text-center text-slate-300' : 'text-center text-slate-500 dark:text-slate-400'}>Нет сообщений. Напишите первым.</div>
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {messages.map((m) => {
               const isOwn = m.sender_id === auth?.user?.id;
               const senderAvatar = m.sender_avatar_url ? avatarUrl(m.sender_avatar_url) : '';
               const senderName = m.sender_name ?? '';
-              const avatarCircle = (
-                <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-300 dark:bg-neutral-600 flex items-center justify-center text-sm font-medium text-slate-600 dark:text-slate-200">
-                  {senderAvatar ? <img src={senderAvatar} alt="" className="w-full h-full object-cover" /> : (senderName || '?').charAt(0).toUpperCase()}
-                </div>
-              );
 
               if (isOwn) {
                 return (
-                  <li key={m.id} className="flex items-end justify-end gap-2">
-                    <div className="flex flex-col items-end min-w-0 max-w-[75%]">
-                      <div
-                        className={`rounded-2xl px-4 py-2 transition-colors duration-200 bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]`}
-                      >
-                        <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                        <p className="mt-1 text-xs text-blue-100">{formatDate(m.created_at)}</p>
-                      </div>
+                  <li key={m.id} className="flex justify-end px-1">
+                    <div
+                      className="max-w-[70%] rounded-2xl rounded-tr-sm px-4 py-2 bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]"
+                    >
+                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                      <p className="mt-1 text-right text-xs opacity-70">{formatDate(m.created_at)}</p>
                     </div>
-                    {avatarCircle}
                   </li>
                 );
               }
 
               return (
-                <li key={m.id} className="flex items-start gap-2 justify-start">
-                  {avatarCircle}
-                  <div className="flex flex-col min-w-0 max-w-[75%]">
+                <li key={m.id} className="flex items-start gap-2 px-1">
+                  <Link to={`/user/${m.sender_id}`} className="shrink-0 mt-0.5">
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-300 dark:bg-neutral-600 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-200">
+                      {senderAvatar
+                        ? <img src={senderAvatar} alt="" className="w-full h-full object-cover" />
+                        : (senderName || '?').charAt(0).toUpperCase()}
+                    </div>
+                  </Link>
+                  <div className="flex flex-col min-w-0 max-w-[70%]">
                     <Link
                       to={`/user/${m.sender_id}`}
-                      className={`text-sm font-medium truncate max-w-full hover:underline ${useThemeCard ? 'text-slate-200' : 'text-slate-700 dark:text-slate-200'}`}
+                      className={`mb-0.5 text-xs font-semibold hover:underline ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
                     >
                       {senderName || 'Пользователь'}
                     </Link>
                     <div
-                      className={`mt-0.5 rounded-2xl px-4 py-2 transition-colors duration-200 ${
-                        useThemeCard ? 'bg-[var(--theme-input-bg)] text-slate-100' : 'bg-slate-200 text-slate-800 dark:bg-neutral-900 dark:text-slate-100'
+                      className={`rounded-2xl rounded-tl-sm px-4 py-2 ${
+                        useThemeCard ? 'bg-[var(--theme-input-bg)] text-slate-100' : 'bg-white text-slate-800 dark:bg-neutral-800 dark:text-slate-100 shadow-sm'
                       }`}
                     >
                       <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      <p className={`mt-1 text-xs ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
-                        {formatDate(m.created_at)}
-                      </p>
+                      <p className={`mt-1 text-xs opacity-60`}>{formatDate(m.created_at)}</p>
                     </div>
                   </div>
                 </li>
