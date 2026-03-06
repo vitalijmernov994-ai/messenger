@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { AppHeader } from '../components/AppHeader';
 import { AppSidebar } from '../components/AppSidebar';
 import { usersApi } from '../api';
+
+const API = import.meta.env.VITE_API_URL || '';
+function resolveAvatarUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `${API}${url}`;
+}
 
 export default function Profile() {
   const { auth, refreshUser } = useAuth();
@@ -11,18 +17,40 @@ export default function Profile() {
   const [name, setName] = useState(auth?.user?.name ?? '');
   const [description, setDescription] = useState(auth?.user?.description ?? '');
   const [avatarUrl, setAvatarUrl] = useState(auth?.user?.avatar_url ?? '');
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (auth?.user) {
       setName(auth.user.name);
       setDescription(auth.user.description ?? '');
       setAvatarUrl(auth.user.avatar_url ?? '');
+      setAvatarPreview('');
     }
   }, [auth?.user]);
+
+  async function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarPreview(URL.createObjectURL(file));
+    setUploadingAvatar(true);
+    setError('');
+    try {
+      const result = await usersApi.uploadAvatar(file);
+      setAvatarUrl(result.avatar_url);
+      await refreshUser();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка загрузки фото');
+      setAvatarPreview('');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +61,6 @@ export default function Profile() {
       await usersApi.updateProfile({
         name,
         description: description || null,
-        avatar_url: avatarUrl.trim() || null,
       });
       setSuccess(true);
       await refreshUser();
@@ -74,34 +101,38 @@ export default function Profile() {
                 )}
 
                 <div className="flex flex-col items-center gap-3">
-                  {avatarUrl.trim() ? (
-                    <img
-                      src={avatarUrl.trim()}
-                      alt=""
-                      className="h-20 w-20 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-500"
-                    />
-                  ) : (
-                    <div
-                      className={customThemeColor && !hasGlassUI ? 'flex h-20 w-20 items-center justify-center rounded-full text-2xl font-semibold' : 'flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 text-2xl font-semibold text-slate-500 dark:bg-neutral-700 dark:text-slate-200'}
-                      style={customThemeColor && !hasGlassUI ? { background: 'var(--theme-input-bg)', color: 'var(--theme-input-text)' } : undefined}
-                    >
-                      {name.charAt(0).toUpperCase() || '?'}
+                  <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                    {(avatarPreview || avatarUrl) ? (
+                      <img
+                        src={avatarPreview || resolveAvatarUrl(avatarUrl)}
+                        alt=""
+                        className="h-24 w-24 rounded-full object-cover ring-2 ring-slate-200 dark:ring-neutral-500"
+                      />
+                    ) : (
+                      <div
+                        className={`flex h-24 w-24 items-center justify-center rounded-full text-2xl font-semibold ${customThemeColor && !hasGlassUI ? '' : 'bg-slate-200 text-slate-500 dark:bg-neutral-700 dark:text-slate-200'}`}
+                        style={customThemeColor && !hasGlassUI ? { background: 'var(--theme-input-bg)', color: 'var(--theme-input-text)' } : undefined}
+                      >
+                        {name.charAt(0).toUpperCase() || '?'}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white text-xs font-medium text-center px-1">
+                        {uploadingAvatar ? 'Загрузка...' : 'Изменить фото'}
+                      </span>
                     </div>
-                  )}
-                  <div className="w-full">
-                    <label htmlFor="profile-avatar" className={`block text-sm font-medium ${customThemeColor && !hasGlassUI ? 'text-slate-200' : 'text-slate-700 dark:text-slate-200'}`}>
-                      Ссылка на аватар
-                    </label>
-                    <input
-                      id="profile-avatar"
-                      type="url"
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://..."
-                      className={`mt-1 w-full rounded-xl border px-3 py-2 transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${!(customThemeColor && !hasGlassUI) ? 'border-slate-300 dark:border-neutral-500 dark:bg-neutral-700 dark:text-slate-100 dark:placeholder-slate-400' : ''}`}
-                      style={customThemeColor && !hasGlassUI ? { background: 'var(--theme-input-bg)', borderColor: 'var(--theme-input-border)', color: 'var(--theme-input-text)' } : undefined}
-                    />
                   </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarFile}
+                    disabled={uploadingAvatar}
+                  />
+                  <p className={`text-xs ${customThemeColor && !hasGlassUI ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                    Нажмите на фото для загрузки (до 5 МБ)
+                  </p>
                 </div>
 
                 <div>

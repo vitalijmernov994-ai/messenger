@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { authMiddleware } from '../middleware/auth.js';
 import { adminOnly } from '../middleware/admin.js';
 import { authController } from '../controllers/authController.js';
@@ -6,6 +9,25 @@ import { usersController } from '../controllers/usersController.js';
 import { dialogsController } from '../controllers/dialogsController.js';
 import { messagesController } from '../controllers/messagesController.js';
 import { adminController } from '../controllers/adminController.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uploadsDir = path.resolve(__dirname, '../../uploads');
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+    cb(null, `avatar_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files allowed'));
+  },
+});
 
 const api = Router();
 
@@ -15,6 +37,7 @@ api.post('/auth/login', authController.login.bind(authController));
 api.use(authMiddleware);
 
 api.get('/auth/me', authController.me.bind(authController));
+api.post('/users/me/avatar', upload.single('avatar'), usersController.uploadAvatar.bind(usersController));
 api.patch('/users/me', usersController.updateProfile.bind(usersController));
 api.get('/users/:id', usersController.getProfile.bind(usersController));
 api.post('/auth/change-password', authController.changePassword.bind(authController));

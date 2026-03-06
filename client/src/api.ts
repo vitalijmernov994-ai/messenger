@@ -48,6 +48,22 @@ export const usersApi = {
   getProfile: (id: string) => api<PublicProfile>(`/api/users/${id}`),
   updateProfile: (data: { name?: string; email?: string; description?: string | null; avatar_url?: string | null }) =>
     api<User>('/api/users/me', { method: 'PATCH', body: JSON.stringify(data) }),
+  uploadAvatar: async (file: File): Promise<{ avatar_url: string }> => {
+    const token = localStorage.getItem('token');
+    const API = import.meta.env.VITE_API_URL || '';
+    const form = new FormData();
+    form.append('avatar', file);
+    const res = await fetch(`${API}/api/users/me/avatar`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || res.statusText);
+    }
+    return res.json();
+  },
 };
 
 export const dialogsApi = {

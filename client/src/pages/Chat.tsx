@@ -162,13 +162,27 @@ export default function Chat() {
                   {senderAvatar ? <img src={senderAvatar} alt="" className="w-full h-full object-cover" /> : (senderName || '?').charAt(0).toUpperCase()}
                 </div>
               );
+
+              if (isOwn) {
+                return (
+                  <li key={m.id} className="flex items-end justify-end gap-2">
+                    <div className="flex flex-col items-end min-w-0 max-w-[75%]">
+                      <div
+                        className={`rounded-2xl px-4 py-2 transition-colors duration-200 bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]`}
+                      >
+                        <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                        <p className="mt-1 text-xs text-blue-100">{formatDate(m.created_at)}</p>
+                      </div>
+                    </div>
+                    {avatarCircle}
+                  </li>
+                );
+              }
+
               return (
-                <li
-                  key={m.id}
-                  className={`flex items-start gap-2 ${isOwn ? 'justify-end flex-row-reverse' : 'justify-start'}`}
-                >
+                <li key={m.id} className="flex items-start gap-2 justify-start">
                   {avatarCircle}
-                  <div className={`flex flex-col min-w-0 max-w-[75%] ${isOwn ? 'items-end' : 'items-start'}`}>
+                  <div className="flex flex-col min-w-0 max-w-[75%]">
                     <Link
                       to={`/user/${m.sender_id}`}
                       className={`text-sm font-medium truncate max-w-full hover:underline ${useThemeCard ? 'text-slate-200' : 'text-slate-700 dark:text-slate-200'}`}
@@ -177,13 +191,11 @@ export default function Chat() {
                     </Link>
                     <div
                       className={`mt-0.5 rounded-2xl px-4 py-2 transition-colors duration-200 ${
-                        isOwn ? 'bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]' : useThemeCard ? 'bg-[var(--theme-input-bg)] text-slate-100' : 'bg-slate-200 text-slate-800 dark:bg-neutral-900 dark:text-slate-100'
+                        useThemeCard ? 'bg-[var(--theme-input-bg)] text-slate-100' : 'bg-slate-200 text-slate-800 dark:bg-neutral-900 dark:text-slate-100'
                       }`}
                     >
                       <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      <p
-                        className={`mt-1 text-xs ${isOwn ? 'text-blue-100' : useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
-                      >
+                      <p className={`mt-1 text-xs ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
                         {formatDate(m.created_at)}
                       </p>
                     </div>
