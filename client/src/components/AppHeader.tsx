@@ -22,7 +22,6 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
   const navigate = useNavigate();
   const useThemeHeader = customThemeColor && !hasGlassUI;
 
-  /* Чат-шапка: Назад | [аватарка] [никнейм] ........... меню */
   if (showBack && chatOther) {
     return (
       <header
@@ -84,7 +83,6 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
     );
   }
 
-  /* Обычная шапка: 3 колонки */
   return (
     <header
       className={`grid shrink-0 grid-cols-3 items-center gap-2 border-b px-4 py-3 transition-colors duration-200 ${

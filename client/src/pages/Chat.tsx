@@ -173,7 +173,6 @@ export default function Chat() {
 
               return (
                 <li key={m.id} className="flex flex-col items-start gap-1 px-1">
-                  {/* Строка: кружок + имя рядом */}
                   <div className="flex items-center gap-2">
                     <Link to={`/user/${m.sender_id}`} className="shrink-0">
                       <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-300 dark:bg-neutral-600 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-200">
@@ -189,7 +188,6 @@ export default function Chat() {
                       {senderName || 'Пользователь'}
                     </Link>
                   </div>
-                  {/* Пузырь сообщения — с отступом под кружком */}
                   <div className="ml-10 max-w-[70%]">
                     <div
                       className={`rounded-2xl rounded-tl-sm px-4 py-2 ${

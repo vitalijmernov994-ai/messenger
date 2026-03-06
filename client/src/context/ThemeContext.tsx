@@ -65,7 +65,6 @@ function hexToRgb(hex: string): string {
   return `${(n >> 16) & 0xff}, ${(n >> 8) & 0xff}, ${n & 0xff}`;
 }
 
-/** Затемнить цвет: factor 1 = без изменений, 0.7 = темнее */
 function darkenHex(hex: string, factor: number): string {
   const n = parseInt(hex.slice(1), 16);
   const r = Math.round(((n >> 16) & 0xff) * factor);
@@ -74,7 +73,6 @@ function darkenHex(hex: string, factor: number): string {
   return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
 }
 
-/** Осветлить цвет: factor 1 = без изменений, 1.3 = светлее (для тёмного фона — видимые поля) */
 function lightenHex(hex: string, factor: number): string {
   const n = parseInt(hex.slice(1), 16);
   const r = Math.min(255, Math.round(((n >> 16) & 0xff) * factor));
