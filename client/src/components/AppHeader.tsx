@@ -22,6 +22,69 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
   const navigate = useNavigate();
   const useThemeHeader = customThemeColor && !hasGlassUI;
 
+  /* Чат-шапка: Назад | [аватарка] [никнейм] ........... меню */
+  if (showBack && chatOther) {
+    return (
+      <header
+        className={`flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3 transition-colors duration-200 ${
+          useThemeHeader ? '' : hasGlassUI ? 'glass-panel border-slate-200/50 dark:border-neutral-700/50' : 'border-slate-200 bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-sm dark:shadow-black/20'
+        }`}
+        style={useThemeHeader ? { background: 'var(--theme-header)', borderColor: 'var(--theme-input-border)', color: '#f8fafc' } : undefined}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className={`shrink-0 flex items-center gap-1 rounded-lg p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${useThemeHeader ? 'text-slate-200 hover:bg-white/15 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-neutral-900 dark:hover:text-slate-200'}`}
+            aria-label="Назад"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="hidden sm:inline text-sm font-medium">Назад</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onChatAvatarClick}
+            className="shrink-0 rounded-full overflow-hidden w-9 h-9 ring-2 ring-slate-300 dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Открыть фото"
+          >
+            {chatOther.avatar_url ? (
+              <img src={chatOther.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className={`flex w-full h-full items-center justify-center text-sm font-medium ${useThemeHeader ? 'bg-white/20 text-slate-100' : 'bg-slate-200 text-slate-600 dark:bg-neutral-600 dark:text-slate-200'}`}>
+                {(chatOther.name || '?').charAt(0).toUpperCase()}
+              </span>
+            )}
+          </button>
+
+          <Link
+            to={`/user/${chatOther.id}`}
+            className={`truncate text-base font-semibold hover:underline ${useThemeHeader ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}
+          >
+            {title}
+          </Link>
+        </div>
+
+        <div className="shrink-0">
+          {showMenu ? (
+            <button
+              type="button"
+              onClick={onMenuToggle}
+              className={`flex rounded-lg p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${useThemeHeader ? 'text-slate-200 hover:bg-white/15' : 'hover:bg-slate-100 dark:hover:bg-neutral-900'}`}
+              aria-label="Меню"
+              aria-expanded={menuOpen}
+            >
+              <Menu className={`h-6 w-6 ${useThemeHeader ? 'text-slate-200' : 'text-slate-600 dark:text-slate-400'}`} />
+            </button>
+          ) : (
+            <span className="w-10" />
+          )}
+        </div>
+      </header>
+    );
+  }
+
+  /* Обычная шапка: 3 колонки */
   return (
     <header
       className={`grid shrink-0 grid-cols-3 items-center gap-2 border-b px-4 py-3 transition-colors duration-200 ${
@@ -31,33 +94,15 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
     >
       <div className="flex items-center gap-2">
         {showBack ? (
-          <>
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className={`flex items-center gap-1 rounded-lg p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-black ${useThemeHeader ? 'text-slate-200 hover:bg-white/15 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-neutral-900 dark:hover:text-slate-200'}`}
-              aria-label="Назад"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="hidden sm:inline text-sm font-medium">Назад</span>
-            </button>
-            {chatOther && (
-              <button
-                type="button"
-                onClick={onChatAvatarClick}
-                className="shrink-0 rounded-full overflow-hidden w-9 h-9 ring-2 ring-slate-300 dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="Открыть фото"
-              >
-                {chatOther.avatar_url ? (
-                  <img src={chatOther.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className={`flex w-full h-full items-center justify-center text-sm font-medium ${useThemeHeader ? 'bg-white/20 text-slate-100' : 'bg-slate-200 text-slate-600 dark:bg-neutral-600 dark:text-slate-200'}`}>
-                    {(chatOther.name || '?').charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </button>
-            )}
-          </>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className={`flex items-center gap-1 rounded-lg p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-black ${useThemeHeader ? 'text-slate-200 hover:bg-white/15 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-neutral-900 dark:hover:text-slate-200'}`}
+            aria-label="Назад"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="hidden sm:inline text-sm font-medium">Назад</span>
+          </button>
         ) : (
           <div className="flex flex-col items-start">
             <span className={useThemeHeader ? 'text-sm font-medium text-slate-100' : 'text-sm font-medium text-slate-800 dark:text-slate-100'}>{auth?.user?.name}</span>
@@ -71,20 +116,9 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
           </div>
         )}
       </div>
-      {chatOther ? (
-        <h1 className={`text-center text-xl font-semibold truncate ${useThemeHeader ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
-          <Link
-            to={`/user/${chatOther.id}`}
-            className={`hover:underline ${useThemeHeader ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}
-          >
-            {title}
-          </Link>
-        </h1>
-      ) : (
-        <h1 className={`text-center text-xl font-semibold truncate ${useThemeHeader ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
-          {title}
-        </h1>
-      )}
+      <h1 className={`text-center text-xl font-semibold truncate ${useThemeHeader ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
+        {title}
+      </h1>
       <div className="flex justify-end">
         {showMenu ? (
           <button
