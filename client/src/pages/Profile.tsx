@@ -37,6 +37,11 @@ export default function Profile() {
   async function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Файл слишком большой. Максимум 10 МБ.');
+      e.target.value = '';
+      return;
+    }
     setAvatarPreview(URL.createObjectURL(file));
     setUploadingAvatar(true);
     setError('');
@@ -131,7 +136,7 @@ export default function Profile() {
                     disabled={uploadingAvatar}
                   />
                   <p className={`text-xs ${customThemeColor && !hasGlassUI ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                    Нажмите на фото для загрузки (до 5 МБ)
+                    Нажмите на фото для загрузки (до 10 МБ)
                   </p>
                 </div>
 
