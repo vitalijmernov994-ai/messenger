@@ -5,24 +5,14 @@ import { AppSidebar } from '../components/AppSidebar';
 import { useTheme } from '../context/ThemeContext';
 import { usersApi, dialogsApi } from '../api';
 import { Search } from 'lucide-react';
+import { getAvatarColor } from '../lib/avatarColor';
 
 type DialogItem = { id: string; created_at: string; other?: { id: string; name: string; email: string } };
 type UserItem = { id: string; name: string; email: string };
 
-const AVATAR_COLORS = [
-  'bg-indigo-500', 'bg-violet-500', 'bg-pink-500', 'bg-rose-500',
-  'bg-orange-500', 'bg-teal-500', 'bg-cyan-500', 'bg-emerald-500',
-];
-
-function avatarColor(name: string) {
-  let n = 0;
-  for (let i = 0; i < name.length; i++) n += name.charCodeAt(i);
-  return AVATAR_COLORS[n % AVATAR_COLORS.length];
-}
-
 function Avatar({ name }: { name: string }) {
   return (
-    <div className={`shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-white text-base font-semibold ${avatarColor(name)}`}>
+    <div className={`shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-white text-base font-semibold ${getAvatarColor(name)}`}>
       {name.charAt(0).toUpperCase()}
     </div>
   );

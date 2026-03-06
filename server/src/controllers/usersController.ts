@@ -32,7 +32,8 @@ export const usersController = {
       res.status(404).json({ error: 'User not found' });
       return;
     }
-    res.json(profile);
+    const isOwner = req.user?.userId === targetId;
+    res.json(isOwner ? profile : { id: profile.id, name: profile.name, description: profile.description, avatar_url: profile.avatar_url });
   },
 
   async uploadAvatar(req: Request, res: Response): Promise<void> {

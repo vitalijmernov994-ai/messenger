@@ -9,6 +9,7 @@ import { usersController } from '../controllers/usersController.js';
 import { dialogsController } from '../controllers/dialogsController.js';
 import { messagesController } from '../controllers/messagesController.js';
 import { adminController } from '../controllers/adminController.js';
+import { contactController } from '../controllers/contactController.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsDir = path.resolve(__dirname, '../../uploads');
@@ -43,6 +44,12 @@ api.get('/users/:id', usersController.getProfile.bind(usersController));
 api.post('/auth/change-password', authController.changePassword.bind(authController));
 api.get('/admin/users', adminOnly, adminController.listUsers.bind(adminController));
 api.get('/users', usersController.list.bind(usersController));
+api.get('/contacts', contactController.list.bind(contactController));
+api.post('/contacts', contactController.add.bind(contactController));
+api.delete('/contacts/:contactId', contactController.remove.bind(contactController));
+api.patch('/contacts/:contactId', contactController.update.bind(contactController));
+api.get('/contacts/:contactId/check', contactController.check.bind(contactController));
+
 api.get('/dialogs', dialogsController.list.bind(dialogsController));
 api.post('/dialogs', dialogsController.getOrCreate.bind(dialogsController));
 api.get('/dialogs/:dialogId/messages', messagesController.list.bind(messagesController));

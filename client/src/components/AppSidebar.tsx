@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { User, MessageCircle, Search, Settings, Shield } from 'lucide-react';
+import { User, MessageCircle, Search, Settings, Shield, BookUser } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -44,6 +44,10 @@ export function AppSidebar({ onClose }: AppSidebarProps) {
         <Link to="/search" onClick={onClose} className={linkClass}>
           <Search className={`h-5 w-5 ${useThemeHeader ? 'text-blue-300' : 'text-blue-600 dark:text-blue-400'}`} />
           Поиск людей
+        </Link>
+        <Link to="/contacts" onClick={onClose} className={linkClass}>
+          <BookUser className={`h-5 w-5 ${useThemeHeader ? 'text-indigo-300' : 'text-indigo-600 dark:text-indigo-400'}`} />
+          Контакты
         </Link>
         <Link to="/settings" onClick={onClose} className={linkClass}>
           <Settings className={`h-5 w-5 ${useThemeHeader ? 'text-slate-300' : 'text-slate-600 dark:text-slate-400'}`} />

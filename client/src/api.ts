@@ -41,7 +41,18 @@ export const authApi = {
     }),
 };
 
-export type PublicProfile = { id: string; name: string; email: string; description?: string | null; avatar_url?: string | null };
+export type PublicProfile = { id: string; name: string; email?: string; description?: string | null; avatar_url?: string | null };
+
+export type ContactRow = { contact_id: string; name: string; avatar_url: string | null; nickname: string | null; local_photo: string | null; created_at: string };
+
+export const contactsApi = {
+  list: () => api<ContactRow[]>('/api/contacts'),
+  add: (contactId: string) => api<{ ok: boolean }>('/api/contacts', { method: 'POST', body: JSON.stringify({ contactId }) }),
+  remove: (contactId: string) => api<{ ok: boolean }>(`/api/contacts/${contactId}`, { method: 'DELETE' }),
+  update: (contactId: string, data: { nickname?: string | null; local_photo?: string | null }) =>
+    api<{ ok: boolean }>(`/api/contacts/${contactId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  check: (contactId: string) => api<{ isContact: boolean }>(`/api/contacts/${contactId}/check`),
+};
 
 export const usersApi = {
   list: () => api<{ id: string; name: string; email: string }[]>('/api/users'),

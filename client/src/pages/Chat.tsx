@@ -7,6 +7,7 @@ import { AppHeader } from '../components/AppHeader';
 import { AppSidebar } from '../components/AppSidebar';
 import { messagesApi, dialogsApi } from '../api';
 import type { Message } from '../api';
+import { getAvatarColor } from '../lib/avatarColor';
 
 const API = import.meta.env.VITE_API_URL || '';
 function avatarUrl(url: string | null | undefined): string {
@@ -175,7 +176,7 @@ export default function Chat() {
                 <li key={m.id} className="flex flex-col items-start gap-1 px-1">
                   <div className="flex items-center gap-2">
                     <Link to={`/user/${m.sender_id}`} className="shrink-0">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-300 dark:bg-neutral-600 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-200">
+                      <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-semibold text-white ${!senderAvatar ? getAvatarColor(senderName || '?') : ''}`}>
                         {senderAvatar
                           ? <img src={senderAvatar} alt="" className="w-full h-full object-cover" />
                           : (senderName || '?').charAt(0).toUpperCase()}

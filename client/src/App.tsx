@@ -10,6 +10,7 @@ import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
+import Contacts from './pages/Contacts';
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { auth, loading } = useAuth();
@@ -118,6 +119,14 @@ export default function App() {
             element={
               <Protected>
                 <UserProfile />
+              </Protected>
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <Protected>
+                <Contacts />
               </Protected>
             }
           />

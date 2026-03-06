@@ -33,6 +33,16 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS contacts (
+  owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  contact_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  nickname    VARCHAR(255),
+  local_photo TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (owner_id, contact_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_messages_dialog_created ON messages(dialog_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_dialog_participants_user ON dialog_participants(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_contacts_owner ON contacts(owner_id);
