@@ -172,28 +172,32 @@ export default function Chat() {
               }
 
               return (
-                <li key={m.id} className="flex items-start gap-2 px-1">
-                  <Link to={`/user/${m.sender_id}`} className="shrink-0 mt-0.5">
-                    <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-300 dark:bg-neutral-600 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-200">
-                      {senderAvatar
-                        ? <img src={senderAvatar} alt="" className="w-full h-full object-cover" />
-                        : (senderName || '?').charAt(0).toUpperCase()}
-                    </div>
-                  </Link>
-                  <div className="flex flex-col min-w-0 max-w-[70%]">
+                <li key={m.id} className="flex flex-col items-start gap-1 px-1">
+                  {/* Строка: кружок + имя рядом */}
+                  <div className="flex items-center gap-2">
+                    <Link to={`/user/${m.sender_id}`} className="shrink-0">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-300 dark:bg-neutral-600 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-200">
+                        {senderAvatar
+                          ? <img src={senderAvatar} alt="" className="w-full h-full object-cover" />
+                          : (senderName || '?').charAt(0).toUpperCase()}
+                      </div>
+                    </Link>
                     <Link
                       to={`/user/${m.sender_id}`}
-                      className={`mb-0.5 text-xs font-semibold hover:underline ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
+                      className={`text-sm font-semibold leading-none hover:underline ${useThemeCard ? 'text-slate-300' : 'text-slate-600 dark:text-slate-300'}`}
                     >
                       {senderName || 'Пользователь'}
                     </Link>
+                  </div>
+                  {/* Пузырь сообщения — с отступом под кружком */}
+                  <div className="ml-10 max-w-[70%]">
                     <div
                       className={`rounded-2xl rounded-tl-sm px-4 py-2 ${
                         useThemeCard ? 'bg-[var(--theme-input-bg)] text-slate-100' : 'bg-white text-slate-800 dark:bg-neutral-800 dark:text-slate-100 shadow-sm'
                       }`}
                     >
                       <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      <p className={`mt-1 text-xs opacity-60`}>{formatDate(m.created_at)}</p>
+                      <p className="mt-1 text-xs opacity-60">{formatDate(m.created_at)}</p>
                     </div>
                   </div>
                 </li>
