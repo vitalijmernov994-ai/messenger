@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: imsitchat-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: imsitchat
+      POSTGRES_PASSWORD: imsitchat_secret
+      POSTGRES_DB: imsitchat
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imsitchat -d imsitchat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - imsitchat-net
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: imsitchat-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://imsitchat:imsitchat_secret@postgres:5432/imsitchat
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      CORS_ORIGIN: http://localhost:5173,http://127.0.0.1:5173,http://localhost:80
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - imsitchat-net
+
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001
+    container_name: imsitchat-client
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
+    networks:
+      - imsitchat-net
+
+volumes:
+  postgres_data:
+
+networks:
+  imsitchat-net:
+    driver: bridge
