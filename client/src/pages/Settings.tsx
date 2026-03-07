@@ -266,11 +266,10 @@ export default function Settings() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setThemeStep('custom')}
+                  onClick={() => { setCustomThemeColor(null); setThemeStep('custom'); }}
                   className={customBtnClass}
-                  style={isCustomActive && customThemeColor ? { background: customThemeColor } : undefined}
                 >
-                  Добавить свою
+                  Свой фон
                 </button>
               </div>
             </div>
@@ -286,50 +285,6 @@ export default function Settings() {
                   ← Назад
                 </button>
                 <span className={`text-sm font-medium ${modalDark || customThemeColor ? 'text-slate-200' : 'text-slate-700 dark:text-slate-300'}`}>Своя тема</span>
-              </div>
-
-              <div className={`rounded-xl border p-3 ${modalDark || customThemeColor ? 'border-white/20 bg-white/10' : 'border-slate-200 bg-slate-50 dark:border-neutral-500 dark:bg-neutral-700/30'}`}>
-                <p className={`mb-2 text-sm font-medium ${modalDark || customThemeColor ? 'text-slate-200' : 'text-slate-700 dark:text-slate-300'}`}>Цвет фона темы</p>
-                <p className={`mb-2 text-xs ${modalDark || customThemeColor ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>Фон приложения и карточки станут в выбранный цвет, кнопки не будут сливаться</p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <input
-                    type="color"
-                    value={colorInput}
-                    onChange={(e) => setColorInput(e.target.value)}
-                    className={`h-10 w-14 cursor-pointer rounded-lg border ${modalDark || customThemeColor ? 'border-white/30' : 'border-slate-300 dark:border-neutral-600'}`}
-                  />
-                  <input
-                    type="text"
-                    value={colorInput}
-                    onChange={(e) => setColorInput(e.target.value)}
-                    placeholder="#2563eb"
-                    className={`w-24 rounded-lg border px-2 py-1.5 text-sm ${modalDark || customThemeColor ? 'border-white/30 bg-white/15 text-slate-100 placeholder-slate-400' : 'border-slate-300 dark:border-neutral-500 dark:bg-neutral-700 dark:text-slate-100'}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      let hex = colorInput.trim();
-                      if (!hex.startsWith('#')) hex = '#' + hex;
-                      if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-                        setColorInput(hex);
-                        setCustomThemeColor(hex);
-                      }
-                    }}
-                    className="rounded-xl px-3 py-1.5 text-sm font-medium bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]"
-                  >
-                    Применить
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCustomThemeColor(null);
-                      setColorInput('#2563eb');
-                    }}
-                    className={modalDark || customThemeColor ? 'rounded-xl bg-white/20 px-3 py-1.5 text-sm font-medium text-slate-100 hover:bg-white/25' : 'rounded-xl bg-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 dark:bg-slate-600 dark:text-slate-200'}
-                  >
-                    Сбросить
-                  </button>
-                </div>
               </div>
 
               <div className={`rounded-xl border p-3 ${modalDark || customThemeColor ? 'border-white/20 bg-white/10' : 'border-slate-200 bg-slate-50 dark:border-neutral-500 dark:bg-neutral-700/30'}`}>

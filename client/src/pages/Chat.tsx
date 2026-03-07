@@ -162,7 +162,10 @@ export default function Chat() {
             {messages.map((m) => {
               const isOwn = m.sender_id === auth?.user?.id;
               const senderAvatar = m.sender_avatar_url ? avatarUrl(m.sender_avatar_url) : '';
-              const senderName = m.sender_name ?? '';
+              const rawName = m.sender_name ?? '';
+              const senderName = (!isOwn && otherUser && m.sender_id === otherUser.id && otherUser.displayName)
+                ? otherUser.displayName
+                : rawName;
 
               if (isOwn) {
                 return (
