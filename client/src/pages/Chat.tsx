@@ -5,7 +5,7 @@ import { useSocket } from '../context/SocketContext';
 import { useTheme } from '../context/ThemeContext';
 import { AppHeader } from '../components/AppHeader';
 import { AppSidebar } from '../components/AppSidebar';
-import { messagesApi, dialogsApi } from '../api';
+import { messagesApi, dialogsApi, contactsApi } from '../api';
 import type { Message } from '../api';
 import { getAvatarColor } from '../lib/avatarColor';
 
@@ -37,7 +37,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [otherUser, setOtherUser] = useState<{ id: string; name: string; avatar_url?: string | null } | null>(null);
+  const [otherUser, setOtherUser] = useState<{ id: string; name: string; displayName: string; avatar_url?: string | null } | null>(null);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -52,10 +52,15 @@ export default function Chat() {
         setMessages(list);
         return dialogsApi.list();
       })
-      .then((dialogs) => {
+      .then(async (dialogs) => {
         const d = dialogs.find((x) => x.id === dialogId);
-        if (d?.other) setOtherUser({ id: d.other.id, name: d.other.name, avatar_url: d.other.avatar_url ?? null });
-        else setOtherUser(null);
+        if (d?.other) {
+          const contactCheck = await contactsApi.check(d.other.id).catch(() => ({ isContact: false, nickname: null, local_photo: null }));
+          const displayName = contactCheck.nickname ?? d.other.name;
+          setOtherUser({ id: d.other.id, name: d.other.name, displayName, avatar_url: d.other.avatar_url ?? null });
+        } else {
+          setOtherUser(null);
+        }
       })
       .catch((e) => setError(e instanceof Error ? e.message : 'Ошибка'))
       .finally(() => setLoading(false));
@@ -102,12 +107,12 @@ export default function Chat() {
     <div className="flex h-screen overflow-hidden">
       <div className="flex flex-1 min-w-0 flex-col">
         <AppHeader
-          title={otherUser?.name ?? 'Чат'}
+          title={otherUser?.displayName ?? otherUser?.name ?? 'Чат'}
           showBack
           showMenu
           menuOpen={menuOpen}
           onMenuToggle={() => setMenuOpen((o) => !o)}
-          chatOther={otherUser ?? undefined}
+          chatOther={otherUser ? { ...otherUser, name: otherUser.displayName } : undefined}
           onChatAvatarClick={() => setAvatarModalOpen(true)}
         />
 
@@ -121,10 +126,10 @@ export default function Chat() {
           >
             <div className="relative max-h-[90vh] max-w-[90vw] rounded-2xl overflow-hidden bg-neutral-800 shadow-xl" onClick={(e) => e.stopPropagation()}>
               {otherUser.avatar_url ? (
-                <img src={avatarUrl(otherUser.avatar_url)} alt={otherUser.name} className="max-h-[90vh] max-w-full object-contain" />
+                <img src={avatarUrl(otherUser.avatar_url)} alt={otherUser.displayName} className="max-h-[90vh] max-w-full object-contain" />
               ) : (
-                <div className="flex h-48 w-48 items-center justify-center text-6xl font-medium text-slate-400">
-                  {(otherUser.name || '?').charAt(0).toUpperCase()}
+                <div className={`flex h-48 w-48 items-center justify-center text-6xl font-semibold text-white ${getAvatarColor(otherUser.displayName || '?')}`}>
+                  {(otherUser.displayName || '?').charAt(0).toUpperCase()}
                 </div>
               )}
               <button

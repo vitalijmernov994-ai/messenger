@@ -109,7 +109,7 @@ export default function Contacts() {
                 return (
                   <li key={c.contact_id} className={rowClass}>
                     <Link to={`/user/${c.contact_id}`} className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className={`shrink-0 w-11 h-11 rounded-full overflow-hidden flex items-center justify-center text-white text-base font-semibold ${!photo ? getAvatarColor(c.name) : ''}`}>
+                      <div className={`shrink-0 w-11 h-11 rounded-full overflow-hidden flex items-center justify-center text-white text-base font-semibold ${!photo ? getAvatarColor(displayName) : ''}`}>
                         {photo
                           ? <img src={photo} alt="" className="w-full h-full object-cover" />
                           : displayName.charAt(0).toUpperCase()}

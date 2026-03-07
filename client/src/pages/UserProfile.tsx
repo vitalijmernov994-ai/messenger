@@ -183,11 +183,14 @@ export default function UserProfile() {
                       alt=""
                       className={`h-24 w-24 rounded-full object-cover ring-2 ${useThemeCard ? 'ring-white/30' : 'ring-slate-200 dark:ring-neutral-700'}`}
                     />
-                  ) : (
-                    <div className={`flex h-24 w-24 items-center justify-center rounded-full text-3xl font-semibold text-white ${getAvatarColor(profile.name)}`}>
-                      {profile.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  ) : (() => {
+                    const displayName = !isOwn && contactInfo.nickname ? contactInfo.nickname : profile.name;
+                    return (
+                      <div className={`flex h-24 w-24 items-center justify-center rounded-full text-3xl font-semibold text-white ${getAvatarColor(displayName)}`}>
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    );
+                  })()}
 
                   <div className="text-center">
                     <h2 className={`text-xl font-semibold ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
@@ -197,7 +200,9 @@ export default function UserProfile() {
                       <p className={`text-xs mt-0.5 ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>{profile.name}</p>
                     )}
                     {profile.public_id && (
-                      <p className={`text-sm mt-0.5 font-mono ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>@{profile.public_id}</p>
+                      <p className={`text-sm mt-0.5 font-mono ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                        <span className="opacity-60 text-xs mr-1 not-mono font-sans">ID</span>@{profile.public_id}
+                      </p>
                     )}
                     {isOwn && profile.email && (
                       <p className={`text-sm mt-0.5 ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>{profile.email}</p>
