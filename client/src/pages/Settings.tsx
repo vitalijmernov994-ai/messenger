@@ -61,7 +61,6 @@ export default function Settings() {
   const systemBtnClass = `rounded-xl py-3 text-sm font-medium transition-colors duration-200 ${isSystemActive ? (effectiveDark ? 'bg-slate-800 text-white border-2 border-slate-600' : 'bg-white border-2 border-slate-300 text-slate-800 shadow-sm') : unselectedBtn}`;
   const customBtnClass = `rounded-xl py-3 text-sm font-medium transition-colors duration-200 ${isCustomActive ? 'text-white border-2 border-white/30' : unselectedBtn}`;
   const [themeStep, setThemeStep] = useState<'main' | 'custom'>('main');
-  const [colorInput, setColorInput] = useState(customThemeColor ?? '#2563eb');
   const [videoUrlInput, setVideoUrlInput] = useState(customBackgroundVideo ?? '');
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState(auth?.user?.email ?? '');
@@ -80,11 +79,10 @@ export default function Settings() {
 
   useEffect(() => {
     if (modal === 'theme') {
-      setColorInput(customThemeColor ?? '#2563eb');
       setVideoUrlInput(customBackgroundVideo ?? '');
       setThemeStep('main');
     }
-  }, [modal, customThemeColor, customBackgroundVideo]);
+  }, [modal, customBackgroundVideo]);
 
   async function saveEmail(e: React.FormEvent) {
     e.preventDefault();
