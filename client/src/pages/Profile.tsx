@@ -140,6 +140,13 @@ export default function Profile() {
                   </p>
                 </div>
 
+                {auth?.user?.public_id && (
+                  <div className={`flex items-center justify-center gap-1.5 text-sm font-mono ${customThemeColor && !hasGlassUI ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                    <span>Ваш ID:</span>
+                    <span className="font-semibold">@{auth.user.public_id}</span>
+                  </div>
+                )}
+
                 <div>
                   <label htmlFor="profile-name" className={`block text-sm font-medium ${customThemeColor && !hasGlassUI ? 'text-slate-200' : 'text-slate-700 dark:text-slate-200'}`}>
                     Имя (ник)

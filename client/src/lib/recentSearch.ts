@@ -1,7 +1,7 @@
 const KEY = 'imsitchat-recent-search';
 const MAX = 10;
 
-export type RecentUser = { id: string; name: string; email: string };
+export type RecentUser = { id: string; name: string; public_id?: string | null; avatar_url?: string | null };
 
 export function getRecentSearches(): RecentUser[] {
   try {

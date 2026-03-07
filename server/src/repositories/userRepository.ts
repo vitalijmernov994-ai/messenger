@@ -1,5 +1,6 @@
 import { query } from '../db/pool.js';
 import type { UserWithPassword } from '../types.js';
+import { generatePublicId } from '../lib/publicId.js';
 
 export const userRepository = {
   async findByEmail(email: string): Promise<UserWithPassword | null> {
@@ -12,16 +13,24 @@ export const userRepository = {
 
   async findById(id: string): Promise<UserWithPassword | null> {
     const res = await query<UserWithPassword>(
-      'SELECT id, email, password, name, role, created_at, description, avatar_url FROM users WHERE id = $1',
+      'SELECT id, email, password, name, role, created_at, description, avatar_url, public_id FROM users WHERE id = $1',
       [id]
     );
     return res.rows[0] ?? null;
   },
 
-  async findPublicById(id: string): Promise<{ id: string; name: string; email: string; description?: string | null; avatar_url?: string | null } | null> {
-    const res = await query<{ id: string; name: string; email: string; description?: string | null; avatar_url?: string | null }>(
-      'SELECT id, name, email, description, avatar_url FROM users WHERE id = $1',
+  async findPublicById(id: string): Promise<{ id: string; name: string; email: string; description?: string | null; avatar_url?: string | null; public_id?: string | null } | null> {
+    const res = await query<{ id: string; name: string; email: string; description?: string | null; avatar_url?: string | null; public_id?: string | null }>(
+      'SELECT id, name, email, description, avatar_url, public_id FROM users WHERE id = $1',
       [id]
+    );
+    return res.rows[0] ?? null;
+  },
+
+  async findByPublicId(publicId: string): Promise<{ id: string; name: string; public_id: string; avatar_url?: string | null } | null> {
+    const res = await query<{ id: string; name: string; public_id: string; avatar_url?: string | null }>(
+      'SELECT id, name, public_id, avatar_url FROM users WHERE public_id = $1',
+      [publicId]
     );
     return res.rows[0] ?? null;
   },
@@ -32,17 +41,23 @@ export const userRepository = {
     name: string,
     role: string
   ): Promise<string> {
+    let publicId = '';
+    for (let attempt = 0; attempt < 100; attempt++) {
+      publicId = generatePublicId();
+      const conflict = await query('SELECT 1 FROM users WHERE public_id = $1', [publicId]);
+      if (conflict.rowCount === 0) break;
+    }
     const res = await query<{ id: string }>(
-      `INSERT INTO users (email, password, name, role) VALUES ($1, $2, $3, $4)
+      `INSERT INTO users (email, password, name, role, public_id) VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
-      [email, hashedPassword, name, role]
+      [email, hashedPassword, name, role, publicId]
     );
     return res.rows[0].id;
   },
 
-  async listExcept(userId: string): Promise<{ id: string; name: string; email: string }[]> {
-    const res = await query<{ id: string; name: string; email: string }>(
-      'SELECT id, name, email FROM users WHERE id != $1 ORDER BY name',
+  async listExcept(userId: string): Promise<{ id: string; name: string; public_id: string; avatar_url?: string | null }[]> {
+    const res = await query<{ id: string; name: string; public_id: string; avatar_url?: string | null }>(
+      'SELECT id, name, public_id, avatar_url FROM users WHERE id != $1 ORDER BY name',
       [userId]
     );
     return res.rows;

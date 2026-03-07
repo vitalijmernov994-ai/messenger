@@ -49,9 +49,9 @@ export const dialogRepository = {
     return res.rows[0]?.count === '1';
   },
 
-  async getOtherParticipant(dialogId: string, userId: string): Promise<{ id: string; name: string; email: string; avatar_url: string | null } | null> {
-    const res = await query<{ id: string; name: string; email: string; avatar_url: string | null }>(
-      `SELECT u.id, u.name, u.email, u.avatar_url FROM users u
+  async getOtherParticipant(dialogId: string, userId: string): Promise<{ id: string; name: string; email: string; avatar_url: string | null; public_id: string | null } | null> {
+    const res = await query<{ id: string; name: string; email: string; avatar_url: string | null; public_id: string | null }>(
+      `SELECT u.id, u.name, u.email, u.avatar_url, u.public_id FROM users u
        INNER JOIN dialog_participants dp ON dp.user_id = u.id
        WHERE dp.dialog_id = $1 AND u.id != $2`,
       [dialogId, userId]

@@ -57,4 +57,12 @@ export const contactRepository = {
     );
     return res.rows[0]?.exists ?? false;
   },
+
+  async getOne(ownerId: string, contactId: string): Promise<{ nickname: string | null; local_photo: string | null } | null> {
+    const res = await query<{ nickname: string | null; local_photo: string | null }>(
+      `SELECT nickname, local_photo FROM contacts WHERE owner_id = $1 AND contact_id = $2`,
+      [ownerId, contactId]
+    );
+    return res.rows[0] ?? null;
+  },
 };

@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from './pool.js';
+import { generatePublicId } from '../lib/publicId.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -30,6 +31,20 @@ export async function migrate(): Promise<void> {
     )
   `);
   await pool.query('CREATE INDEX IF NOT EXISTS idx_contacts_owner ON contacts(owner_id)');
+
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS public_id VARCHAR(6)');
+  const nullUsers = await pool.query<{ id: string }>('SELECT id FROM users WHERE public_id IS NULL');
+  for (const row of nullUsers.rows) {
+    let pid = '';
+    for (let attempt = 0; attempt < 100; attempt++) {
+      pid = generatePublicId();
+      const conflict = await pool.query('SELECT 1 FROM users WHERE public_id = $1', [pid]);
+      if (conflict.rowCount === 0) break;
+    }
+    await pool.query('UPDATE users SET public_id = $1 WHERE id = $2', [pid, row.id]);
+  }
+  await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_public_id ON users(public_id)');
+
   console.log('Migration completed.');
 }
 

@@ -2,6 +2,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Menu, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { getAvatarColor } from '../lib/avatarColor';
 
 type ChatOther = { id: string; name: string; avatar_url?: string | null };
 
@@ -44,13 +45,13 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
           <button
             type="button"
             onClick={onChatAvatarClick}
-            className="shrink-0 rounded-full overflow-hidden w-9 h-9 ring-2 ring-slate-300 dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="shrink-0 rounded-full overflow-hidden w-9 h-9 focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Открыть фото"
           >
             {chatOther.avatar_url ? (
               <img src={chatOther.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className={`flex w-full h-full items-center justify-center text-sm font-medium ${useThemeHeader ? 'bg-white/20 text-slate-100' : 'bg-slate-200 text-slate-600 dark:bg-neutral-600 dark:text-slate-200'}`}>
+              <span className={`flex w-full h-full items-center justify-center text-sm font-semibold text-white ${getAvatarColor(chatOther.name || '?')}`}>
                 {(chatOther.name || '?').charAt(0).toUpperCase()}
               </span>
             )}

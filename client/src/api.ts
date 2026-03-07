@@ -41,9 +41,11 @@ export const authApi = {
     }),
 };
 
-export type PublicProfile = { id: string; name: string; email?: string; description?: string | null; avatar_url?: string | null };
+export type PublicProfile = { id: string; name: string; email?: string; description?: string | null; avatar_url?: string | null; public_id?: string | null };
 
 export type ContactRow = { contact_id: string; name: string; avatar_url: string | null; nickname: string | null; local_photo: string | null; created_at: string };
+
+export type ContactCheck = { isContact: boolean; nickname: string | null; local_photo: string | null };
 
 export const contactsApi = {
   list: () => api<ContactRow[]>('/api/contacts'),
@@ -51,11 +53,14 @@ export const contactsApi = {
   remove: (contactId: string) => api<{ ok: boolean }>(`/api/contacts/${contactId}`, { method: 'DELETE' }),
   update: (contactId: string, data: { nickname?: string | null; local_photo?: string | null }) =>
     api<{ ok: boolean }>(`/api/contacts/${contactId}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  check: (contactId: string) => api<{ isContact: boolean }>(`/api/contacts/${contactId}/check`),
+  check: (contactId: string) => api<ContactCheck>(`/api/contacts/${contactId}/check`),
 };
 
+export type UserListItem = { id: string; name: string; public_id: string; avatar_url?: string | null };
+
 export const usersApi = {
-  list: () => api<{ id: string; name: string; email: string }[]>('/api/users'),
+  list: (q?: string) => api<UserListItem[]>(q ? `/api/users?q=${encodeURIComponent(q)}` : '/api/users'),
+  search: (q: string) => api<UserListItem[]>(`/api/users?q=${encodeURIComponent(q)}`),
   getProfile: (id: string) => api<PublicProfile>(`/api/users/${id}`),
   updateProfile: (data: { name?: string; email?: string; description?: string | null; avatar_url?: string | null }) =>
     api<User>('/api/users/me', { method: 'PATCH', body: JSON.stringify(data) }),
@@ -79,7 +84,7 @@ export const usersApi = {
 
 export const dialogsApi = {
   list: () =>
-    api<{ id: string; created_at: string; other?: { id: string; name: string; email: string; avatar_url?: string | null } }[]>(
+    api<{ id: string; created_at: string; other?: { id: string; name: string; public_id?: string; avatar_url?: string | null } }[]>(
       '/api/dialogs'
     ),
   getOrCreate: (otherUserId: string) =>
@@ -110,6 +115,7 @@ export interface User {
   name: string;
   description?: string | null;
   avatar_url?: string | null;
+  public_id?: string | null;
   role: string;
   created_at: string;
 }

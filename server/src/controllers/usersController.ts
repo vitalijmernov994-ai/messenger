@@ -17,7 +17,19 @@ export const usersController = {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    if (q.startsWith('@')) {
+      const publicId = q.slice(1);
+      const found = await userService.findByPublicId(publicId, userId);
+      res.json(found ? [found] : []);
+      return;
+    }
     const list = await userService.listForDialog(userId);
+    if (q) {
+      const ql = q.toLowerCase();
+      res.json(list.filter((u) => u.name.toLowerCase().includes(ql)));
+      return;
+    }
     res.json(list);
   },
 
@@ -33,7 +45,7 @@ export const usersController = {
       return;
     }
     const isOwner = req.user?.userId === targetId;
-    res.json(isOwner ? profile : { id: profile.id, name: profile.name, description: profile.description, avatar_url: profile.avatar_url });
+    res.json(isOwner ? profile : { id: profile.id, name: profile.name, description: profile.description, avatar_url: profile.avatar_url, public_id: (profile as { public_id?: string | null }).public_id });
   },
 
   async uploadAvatar(req: Request, res: Response): Promise<void> {

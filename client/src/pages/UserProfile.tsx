@@ -6,7 +6,7 @@ import { AppSidebar } from '../components/AppSidebar';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { usersApi, dialogsApi, contactsApi } from '../api';
-import type { PublicProfile } from '../api';
+import type { PublicProfile, ContactCheck } from '../api';
 import { getAvatarColor } from '../lib/avatarColor';
 
 const SERVER = import.meta.env.VITE_API_URL || '';
@@ -27,10 +27,12 @@ export default function UserProfile() {
   const [starting, setStarting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dotMenuOpen, setDotMenuOpen] = useState(false);
-  const [isContact, setIsContact] = useState(false);
+  const [contactInfo, setContactInfo] = useState<ContactCheck>({ isContact: false, nickname: null, local_photo: null });
   const [nicknameModal, setNicknameModal] = useState(false);
   const [nicknameInput, setNicknameInput] = useState('');
   const dotMenuRef = useRef<HTMLDivElement>(null);
+
+  const isContact = contactInfo.isContact;
 
   const isOwn = auth?.user?.id === id;
 
@@ -44,7 +46,7 @@ export default function UserProfile() {
       .then(([p, c]) => {
         if (!cancelled) {
           setProfile(p);
-          setIsContact(c.isContact);
+          setContactInfo(c);
         }
       })
       .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : 'Ошибка'); })
@@ -82,10 +84,10 @@ export default function UserProfile() {
     try {
       if (isContact) {
         await contactsApi.remove(id);
-        setIsContact(false);
+        setContactInfo({ isContact: false, nickname: null, local_photo: null });
       } else {
         await contactsApi.add(id);
-        setIsContact(true);
+        setContactInfo((prev) => ({ ...prev, isContact: true }));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ошибка');
@@ -94,8 +96,10 @@ export default function UserProfile() {
 
   async function saveNickname() {
     if (!id) return;
+    const newNickname = nicknameInput.trim() || null;
     try {
-      await contactsApi.update(id, { nickname: nicknameInput.trim() || null });
+      await contactsApi.update(id, { nickname: newNickname });
+      setContactInfo((prev) => ({ ...prev, nickname: newNickname }));
       setNicknameModal(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ошибка');
@@ -186,7 +190,15 @@ export default function UserProfile() {
                   )}
 
                   <div className="text-center">
-                    <h2 className={`text-xl font-semibold ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>{profile.name}</h2>
+                    <h2 className={`text-xl font-semibold ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
+                      {!isOwn && contactInfo.nickname ? contactInfo.nickname : profile.name}
+                    </h2>
+                    {!isOwn && contactInfo.nickname && (
+                      <p className={`text-xs mt-0.5 ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>{profile.name}</p>
+                    )}
+                    {profile.public_id && (
+                      <p className={`text-sm mt-0.5 font-mono ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>@{profile.public_id}</p>
+                    )}
                     {isOwn && profile.email && (
                       <p className={`text-sm mt-0.5 ${useThemeCard ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>{profile.email}</p>
                     )}

@@ -49,7 +49,7 @@ export const contactController = {
     const userId = req.user?.userId;
     if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
     const { contactId } = req.params;
-    const exists = await contactRepository.exists(userId, contactId);
-    res.json({ isContact: exists });
+    const row = await contactRepository.getOne(userId, contactId);
+    res.json({ isContact: !!row, nickname: row?.nickname ?? null, local_photo: row?.local_photo ?? null });
   },
 };
