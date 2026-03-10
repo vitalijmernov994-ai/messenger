@@ -9,6 +9,7 @@ const AuthContext = createContext<{
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  setUser: (user: User) => void;
   loading: boolean;
 }>(null!);
 
@@ -53,18 +54,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuth(null);
   };
 
+  const setUser = useCallback((user: User) => {
+    setAuth((prev) => (prev ? { ...prev, user } : prev));
+  }, []);
+
   const refreshUser = useCallback(async () => {
-    if (!auth?.token) return;
+    const token = auth?.token;
+    if (!token) return;
     try {
       const user = await authApi.me();
-      setAuth({ user, token: auth.token });
+      setAuth({ user, token });
     } catch {
       logout();
     }
-  }, [auth?.token]);
+  }, [auth?.token, logout]);
 
   return (
-    <AuthContext.Provider value={{ auth, login, register, logout, refreshUser, loading }}>
+    <AuthContext.Provider value={{ auth, login, register, logout, refreshUser, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

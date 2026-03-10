@@ -12,7 +12,7 @@ function resolveAvatarUrl(url: string | null | undefined): string {
 }
 
 export default function Profile() {
-  const { auth, refreshUser } = useAuth();
+  const { auth, refreshUser, setUser } = useAuth();
   const { hasGlassUI, customThemeColor } = useTheme();
   const [name, setName] = useState(auth?.user?.name ?? '');
   const [description, setDescription] = useState(auth?.user?.description ?? '');
@@ -63,12 +63,12 @@ export default function Profile() {
     setSuccess(false);
     setLoading(true);
     try {
-      await usersApi.updateProfile({
+      const updated = await usersApi.updateProfile({
         name,
         description: description || null,
       });
       setSuccess(true);
-      await refreshUser();
+      setUser(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка');
     } finally {

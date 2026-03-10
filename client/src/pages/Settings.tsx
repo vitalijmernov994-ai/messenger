@@ -45,7 +45,7 @@ function Modal({
 }
 
 export default function Settings() {
-  const { auth, refreshUser } = useAuth();
+  const { auth, setUser } = useAuth();
   const { theme, setTheme, customThemeColor, setCustomThemeColor, customBackgroundImage, setCustomBackgroundImage, customBackgroundVideo, setCustomBackgroundVideo, hasGlassUI, effectiveDark } = useTheme();
   const useThemeCard = customThemeColor && !hasGlassUI;
   const [modal, setModal] = useState<'password' | 'email' | 'theme' | null>(null);
@@ -90,9 +90,9 @@ export default function Settings() {
     setEmailSuccess(false);
     setEmailLoading(true);
     try {
-      await usersApi.updateProfile({ email });
+      const updated = await usersApi.updateProfile({ email });
       setEmailSuccess(true);
-      await refreshUser();
+      setUser(updated);
       setModal(null);
     } catch (err) {
       setEmailError(err instanceof Error ? err.message : 'Ошибка');
