@@ -90,8 +90,8 @@ export default function Profile() {
         <main className="flex-1 overflow-y-auto p-4">
           <div className="mx-auto max-w-lg">
             <section
-              className={`rounded-xl p-6 shadow-sm transition-colors duration-200 ${hasGlassUI ? 'glass-panel' : customThemeColor ? '' : 'bg-white dark:bg-neutral-800 dark:border dark:border-neutral-600 dark:shadow-lg dark:shadow-black/30'}`}
-              style={customThemeColor && !hasGlassUI ? { background: 'var(--theme-card)' } : undefined}
+              className={`liquid-card rounded-2xl p-6 transition-colors duration-200`}
+              style={customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
             >
               <form onSubmit={save} className="space-y-5">
                 {error && (

@@ -136,6 +136,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--theme-input-text', '#f8fafc');
       root.style.setProperty('--theme-input-placeholder', 'rgba(248,250,252,0.6)');
       localStorage.setItem(STORAGE_THEME_COLOR, customThemeColor);
+      root.setAttribute('data-theme-color', 'on');
     } else {
       root.style.removeProperty('--theme-bg');
       root.style.removeProperty('--theme-bg-rgb');
@@ -148,6 +149,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.removeProperty('--theme-input-text');
       root.style.removeProperty('--theme-input-placeholder');
       localStorage.removeItem(STORAGE_THEME_COLOR);
+      root.removeAttribute('data-theme-color');
     }
   }, [customThemeColor]);
 

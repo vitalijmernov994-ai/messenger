@@ -140,8 +140,8 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => setModal('password')}
-          className={`flex flex-col items-center gap-2 rounded-2xl border p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${useThemeCard ? 'border-white/20 hover:bg-white/10' : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-lg dark:shadow-black/30 dark:hover:bg-neutral-700'}`}
-          style={useThemeCard ? { background: 'var(--theme-card)' } : undefined}
+          className="liquid-card flex flex-col items-center gap-2 rounded-2xl p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          style={useThemeCard || customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
         >
           <span className="text-2xl">🔐</span>
           <span className={`font-medium ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>Сменить пароль</span>
@@ -149,8 +149,8 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => setModal('email')}
-          className={`flex flex-col items-center gap-2 rounded-2xl border p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${useThemeCard ? 'border-white/20 hover:bg-white/10' : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-lg dark:shadow-black/30 dark:hover:bg-neutral-700'}`}
-          style={useThemeCard ? { background: 'var(--theme-card)' } : undefined}
+          className="liquid-card flex flex-col items-center gap-2 rounded-2xl p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          style={useThemeCard || customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
         >
           <span className="text-2xl">✉</span>
           <span className={`font-medium ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>Сменить почту</span>
@@ -158,8 +158,8 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => setModal('theme')}
-          className={`flex flex-col items-center gap-2 rounded-2xl border p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${useThemeCard ? 'border-white/20 hover:bg-white/10' : 'border-slate-200 bg-white hover:bg-slate-50 dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-lg dark:shadow-black/30 dark:hover:bg-neutral-700'}`}
-          style={useThemeCard ? { background: 'var(--theme-card)' } : undefined}
+          className="liquid-card flex flex-col items-center gap-2 rounded-2xl p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          style={useThemeCard || customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
         >
           <span className="text-2xl">🌓</span>
           <span className={`font-medium ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>Сменить тему</span>

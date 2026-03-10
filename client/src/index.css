@@ -92,3 +92,29 @@ body {
   min-height: 100vh;
   position: relative;
 }
+
+/* Мягкие выпуклые карточки в цвет темы (жидкое стекло) */
+.liquid-card {
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.75),
+    0 0 0 1px rgba(15, 23, 42, 0.7);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .liquid-card {
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+}
+
+/* При своей теме используем цвет фона как основу стекла */
+:root[data-theme-color='on'] .liquid-card {
+  background: rgba(var(--theme-bg-rgb, 15, 23, 42), 0.86);
+  border-color: rgba(var(--theme-bg-rgb, 148, 163, 184), 0.6);
+  box-shadow:
+    0 22px 48px rgba(var(--theme-bg-rgb, 15, 23, 42), 0.8),
+    0 0 0 1px rgba(15, 23, 42, 0.6);
+}

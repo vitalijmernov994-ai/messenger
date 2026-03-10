@@ -83,8 +83,8 @@ export default function Search() {
     );
   }
 
-  const cardClass = `rounded-xl p-4 shadow-sm ${useThemeCard ? '' : 'bg-white dark:bg-neutral-800 dark:border dark:border-neutral-600 dark:shadow-lg dark:shadow-black/30'}`;
-  const cardStyle = useThemeCard ? { background: 'var(--theme-card)' } : undefined;
+  const cardClass = `liquid-card rounded-2xl p-4`;
+  const cardStyle = useThemeCard || customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined;
   const labelClass = `mb-3 text-sm font-medium ${useThemeCard ? 'text-slate-300' : 'text-slate-600 dark:text-slate-300'}`;
   const emptyClass = `text-sm ${useThemeCard ? 'text-slate-400' : 'text-slate-500 dark:text-slate-400'}`;
 
