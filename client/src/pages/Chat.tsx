@@ -37,6 +37,7 @@ export default function Chat() {
   const [fileUploading, setFileUploading] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [recording, setRecording] = useState(false);
+  const [videoRecording, setVideoRecording] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [vu, setVu] = useState(0);
@@ -248,6 +249,55 @@ export default function Chat() {
       setError(err instanceof Error ? err.message : 'Ошибка отправки файла');
     } finally {
       setFileUploading(false);
+    }
+  }
+
+  async function startVideoMessage() {
+    if (!dialogId || videoRecording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const chunks: BlobPart[] = [];
+      let mimeType: string | undefined;
+      const candidates = [
+        'video/webm;codecs=vp8,opus',
+        'video/webm',
+      ];
+      if (typeof MediaRecorder !== 'undefined') {
+        for (const c of candidates) {
+          if (MediaRecorder.isTypeSupported(c)) {
+            mimeType = c;
+            break;
+          }
+        }
+      }
+      const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      setVideoRecording(true);
+      rec.ondataavailable = (ev) => {
+        if (ev.data.size > 0) chunks.push(ev.data);
+      };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setVideoRecording(false);
+        if (!dialogId) return;
+        try {
+          const blobType = mimeType ?? 'video/webm';
+          const blob = new Blob(chunks, { type: blobType });
+          const ext = blobType.includes('mp4') ? 'mp4' : 'webm';
+          const file = new File([blob], `video_${Date.now()}.${ext}`, { type: blob.type || blobType });
+          const msg = await messagesApi.sendFile(dialogId, file);
+          setMessages((prev) => [...prev, msg]);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Ошибка отправки видео-сообщения');
+        }
+      };
+      rec.start();
+      // ограничим длину видео 15 сек
+      setTimeout(() => {
+        if (rec.state === 'recording') rec.stop();
+      }, 15000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось получить доступ к камере/микрофону');
+      setVideoRecording(false);
     }
   }
 
@@ -542,6 +592,19 @@ export default function Chat() {
             className={`flex-1 rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-shadow duration-200 ${!useThemeCard ? 'border-slate-300 dark:border-neutral-500 dark:bg-neutral-700 dark:text-slate-100 dark:placeholder-slate-400' : ''}`}
             style={useThemeCard ? { background: 'var(--theme-input-bg)', borderColor: 'var(--theme-input-border)', color: 'var(--theme-input-text)' } : undefined}
           />
+          <button
+            type="button"
+            onClick={startVideoMessage}
+            disabled={videoRecording}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-lg disabled:opacity-50 ${
+              videoRecording
+                ? 'bg-amber-500 text-white'
+                : 'bg-slate-200 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'
+            }`}
+            aria-label="Видео-сообщение"
+          >
+            🎥
+          </button>
           <button
             type="button"
             onClick={handleMicClick}
