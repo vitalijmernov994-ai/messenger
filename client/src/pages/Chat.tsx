@@ -257,11 +257,20 @@ export default function Chat() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const chunks: BlobPart[] = [];
       let mimeType: string | undefined;
+      const candidates = [
+        'audio/webm;codecs=opus',
+        'audio/ogg;codecs=opus',
+        'audio/webm',
+        'audio/ogg',
+        'video/webm;codecs=vp8,opus',
+        'video/webm',
+      ];
       if (typeof MediaRecorder !== 'undefined') {
-        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-          mimeType = 'audio/webm;codecs=opus';
-        } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
-          mimeType = 'audio/ogg;codecs=opus';
+        for (const c of candidates) {
+          if (MediaRecorder.isTypeSupported(c)) {
+            mimeType = c;
+            break;
+          }
         }
       }
       const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
@@ -304,8 +313,10 @@ export default function Chat() {
         try {
           const blobType = mimeType ?? 'audio/webm';
           const blob = new Blob(chunks, { type: blobType });
+          const isVideo = blobType.startsWith('video/');
           const ext = blobType.includes('ogg') ? 'ogg' : 'webm';
-          const file = new File([blob], `voice_${Date.now()}.${ext}`, { type: blob.type || blobType });
+          const namePrefix = isVideo ? 'video_voice' : 'voice';
+          const file = new File([blob], `${namePrefix}_${Date.now()}.${ext}`, { type: blob.type || blobType });
           const msg = await messagesApi.sendFile(dialogId, file);
           setMessages((prev) => [...prev, msg]);
         } catch (err) {
