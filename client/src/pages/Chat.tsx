@@ -34,6 +34,9 @@ export default function Chat() {
   const { joinDialog, leaveDialog, onNewMessage } = useSocket();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [fileUploading, setFileUploading] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -134,6 +137,59 @@ export default function Chat() {
     }
   }
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !dialogId) return;
+    e.target.value = '';
+    setFileUploading(true);
+    setError('');
+    try {
+      const msg = await messagesApi.sendFile(dialogId, file);
+      setMessages((prev) => [...prev, msg]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка отправки файла');
+    } finally {
+      setFileUploading(false);
+    }
+  }
+
+  async function startRecording() {
+    if (!dialogId || recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const chunks: BlobPart[] = [];
+      const rec = new MediaRecorder(stream);
+      mediaRecorderRef.current = rec;
+      rec.ondataavailable = (ev) => {
+        if (ev.data.size > 0) chunks.push(ev.data);
+      };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (!dialogId) return;
+        try {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          const file = new File([blob], `voice_${Date.now()}.webm`, { type: blob.type || 'audio/webm' });
+          const msg = await messagesApi.sendFile(dialogId, file);
+          setMessages((prev) => [...prev, msg]);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Ошибка отправки голосового сообщения');
+        } finally {
+          setRecording(false);
+        }
+      };
+      rec.start();
+      setRecording(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось получить доступ к микрофону');
+    }
+  }
+
+  function stopRecording() {
+    const rec = mediaRecorderRef.current;
+    if (!rec || rec.state !== 'recording') return;
+    rec.stop();
+  }
+
   if (!dialogId) return null;
 
   return (
@@ -232,11 +288,33 @@ export default function Chat() {
                   </div>
                   <div className="ml-10 max-w-[70%]">
                     <div
-                      className={`rounded-2xl rounded-tl-sm px-4 py-2 ${
+                      className={`space-y-1 rounded-2xl rounded-tl-sm px-4 py-2 ${
                         useThemeCard ? 'bg-[var(--theme-input-bg)] text-slate-100' : 'bg-white text-slate-800 dark:bg-neutral-800 dark:text-slate-100 shadow-sm'
                       }`}
                     >
-                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                      {m.file_url && (
+                        <div className="max-w-xs">
+                          {m.file_type === 'image' ? (
+                            <img src={avatarUrl(m.file_url)} alt={m.file_name || ''} className="max-h-64 w-full rounded-lg object-contain" />
+                          ) : m.file_type === 'video' ? (
+                            <video src={avatarUrl(m.file_url)} controls className="max-h-64 w-full rounded-lg" />
+                          ) : m.file_type === 'audio' ? (
+                            <audio src={avatarUrl(m.file_url)} controls className="w-full" />
+                          ) : (
+                            <a
+                              href={avatarUrl(m.file_url)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm text-blue-500 hover:underline break-all"
+                            >
+                              {m.file_name || 'Файл'}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      {m.body && (
+                        <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                      )}
                       <p className="mt-1 text-xs opacity-60">{formatDate(m.created_at)}</p>
                     </div>
                   </div>
@@ -263,6 +341,22 @@ export default function Chat() {
             className={`flex-1 rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-shadow duration-200 ${!useThemeCard ? 'border-slate-300 dark:border-neutral-500 dark:bg-neutral-700 dark:text-slate-100 dark:placeholder-slate-400' : ''}`}
             style={useThemeCard ? { background: 'var(--theme-input-bg)', borderColor: 'var(--theme-input-border)', color: 'var(--theme-input-text)' } : undefined}
           />
+          <label className="flex items-center rounded-xl border px-3 py-2 text-sm cursor-pointer bg-white hover:bg-slate-50 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:border-neutral-500">
+            <span className="select-none">{fileUploading ? 'Файл...' : '📎'}</span>
+            <input
+              type="file"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={fileUploading}
+            />
+          </label>
+          <button
+            type="button"
+            onClick={recording ? stopRecording : startRecording}
+            className={`rounded-xl px-3 py-2 text-sm font-medium ${recording ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'}`}
+          >
+            {recording ? 'Стоп' : '🎤'}
+          </button>
           <button
             type="submit"
             disabled={sending || !input.trim()}

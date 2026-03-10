@@ -14,19 +14,41 @@ import { contactController } from '../controllers/contactController.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsDir = path.resolve(__dirname, '../../uploads');
 
-const storage = multer.diskStorage({
+const avatarStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadsDir),
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
     cb(null, `avatar_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
   },
 });
-const upload = multer({
-  storage,
+const uploadAvatar = multer({
+  storage: avatarStorage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
     else cb(new Error('Only image files allowed'));
+  },
+});
+
+const messageStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '';
+    cb(null, `msg_${Date.now()}_${Math.random().toString(36).slice(2)}${ext || '.bin'}`);
+  },
+});
+
+const uploadMessage = multer({
+  storage: messageStorage,
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const mime = file.mimetype || '';
+    if (mime.startsWith('image/') || mime.startsWith('video/') || mime.startsWith('audio/')) {
+      cb(null, true);
+      return;
+    }
+    // разрешаем и другие типы как “файлы”
+    cb(null, true);
   },
 });
 
@@ -38,7 +60,7 @@ api.post('/auth/login', authController.login.bind(authController));
 api.use(authMiddleware);
 
 api.get('/auth/me', authController.me.bind(authController));
-api.post('/users/me/avatar', upload.single('avatar'), usersController.uploadAvatar.bind(usersController));
+api.post('/users/me/avatar', uploadAvatar.single('avatar'), usersController.uploadAvatar.bind(usersController));
 api.patch('/users/me', usersController.updateProfile.bind(usersController));
 api.get('/users/:id', usersController.getProfile.bind(usersController));
 api.post('/auth/change-password', authController.changePassword.bind(authController));
@@ -57,5 +79,6 @@ api.get('/dialogs', dialogsController.list.bind(dialogsController));
 api.post('/dialogs', dialogsController.getOrCreate.bind(dialogsController));
 api.get('/dialogs/:dialogId/messages', messagesController.list.bind(messagesController));
 api.post('/dialogs/:dialogId/messages', messagesController.send.bind(messagesController));
+api.post('/dialogs/:dialogId/media', uploadMessage.single('file'), messagesController.sendMedia.bind(messagesController));
 
 export { api };

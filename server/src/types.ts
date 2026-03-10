@@ -26,6 +26,10 @@ export interface Message {
   sender_id: string;
   body: string;
   created_at: Date;
+  file_url?: string | null;
+  file_type?: string | null;
+  file_name?: string | null;
+  file_size?: number | null;
 }
 
 export interface MessageWithSender extends Message {

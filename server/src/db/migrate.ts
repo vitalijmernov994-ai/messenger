@@ -20,6 +20,10 @@ export async function migrate(): Promise<void> {
   await pool.query(sql);
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS description TEXT');
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT');
+  await pool.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_url TEXT');
+  await pool.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_type VARCHAR(20)');
+  await pool.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_name TEXT');
+  await pool.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_size INTEGER');
   await pool.query(`
     CREATE TABLE IF NOT EXISTS banned_emails (
       email      VARCHAR(255) PRIMARY KEY,

@@ -102,6 +102,23 @@ export const messagesApi = {
       method: 'POST',
       body: JSON.stringify({ body }),
     }),
+  sendFile: async (dialogId: string, file: File, body?: string): Promise<Message> => {
+    const token = localStorage.getItem('token');
+    const API_URL = import.meta.env.VITE_API_URL || '';
+    const form = new FormData();
+    form.append('file', file);
+    if (body && body.trim()) form.append('body', body.trim());
+    const res = await fetch(`${API_URL}/api/dialogs/${dialogId}/media`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || res.statusText);
+    }
+    return res.json();
+  },
 };
 
 export const adminApi = {
@@ -142,4 +159,8 @@ export interface Message {
   sender_name?: string;
   sender_email?: string;
   sender_avatar_url?: string | null;
+  file_url?: string | null;
+  file_type?: string | null;
+  file_name?: string | null;
+  file_size?: number | null;
 }

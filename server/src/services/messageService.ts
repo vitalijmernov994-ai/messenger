@@ -16,6 +16,20 @@ export const messageService = {
     return full;
   },
 
+  async sendWithFile(
+    dialogId: string,
+    senderId: string,
+    body: string,
+    file: { url: string; type: string | null; name: string | null; size: number | null }
+  ): Promise<MessageWithSender> {
+    const isParticipant = await dialogService.ensureParticipant(dialogId, senderId);
+    if (!isParticipant) throw new Error('FORBIDDEN');
+    const msg = await messageRepository.create(dialogId, senderId, body, file);
+    const full = await messageRepository.findById(msg.id);
+    if (!full) throw new Error('Message not found');
+    return full;
+  },
+
   async getByDialog(dialogId: string, userId: string): Promise<MessageWithSender[]> {
     const isParticipant = await dialogService.ensureParticipant(dialogId, userId);
     if (!isParticipant) throw new Error('FORBIDDEN');
