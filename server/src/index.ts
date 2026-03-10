@@ -24,7 +24,12 @@ const httpServer = createServer(app);
 const io = setupSocket(httpServer);
 app.locals.io = io;
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map((s) => s.trim());
 app.use(
   cors({
