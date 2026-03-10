@@ -5,8 +5,8 @@ import { AppHeader } from '../components/AppHeader';
 import { AppSidebar } from '../components/AppSidebar';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { usersApi, dialogsApi, contactsApi } from '../api';
-import type { PublicProfile, ContactCheck } from '../api';
+import { usersApi, dialogsApi, contactsApi, messagesApi } from '../api';
+import type { PublicProfile, ContactCheck, Message } from '../api';
 import { getAvatarColor } from '../lib/avatarColor';
 
 const SERVER = import.meta.env.VITE_API_URL || '';
@@ -31,6 +31,9 @@ export default function UserProfile() {
   const [nicknameModal, setNicknameModal] = useState(false);
   const [nicknameInput, setNicknameInput] = useState('');
   const dotMenuRef = useRef<HTMLDivElement>(null);
+  const [media, setMedia] = useState<Message[] | null>(null);
+  const [mediaError, setMediaError] = useState('');
+  const [mediaTab, setMediaTab] = useState<'photos' | 'videos' | 'files' | 'audio' | null>(null);
 
   const isContact = contactInfo.isContact;
 
@@ -53,6 +56,24 @@ export default function UserProfile() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !auth?.user?.id || auth.user.id === id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { dialogId } = await dialogsApi.getOrCreate(id);
+        const items = await messagesApi.listMedia(dialogId);
+        if (!cancelled) {
+          setMedia(items);
+          setMediaError('');
+        }
+      } catch (e) {
+        if (!cancelled) setMediaError(e instanceof Error ? e.message : 'Ошибка загрузки медиа');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id, auth?.user?.id]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -111,6 +132,11 @@ export default function UserProfile() {
   const cardStyle = useThemeCard ? { background: 'var(--theme-card)' } : undefined;
   const cardClass = `rounded-xl p-6 shadow-sm transition-colors duration-200 ${hasGlassUI ? 'glass-panel' : useThemeCard ? '' : 'bg-white dark:bg-neutral-800 dark:border dark:border-neutral-600 dark:shadow-lg dark:shadow-black/30'}`;
 
+  const photos = (media ?? []).filter((m) => m.file_type === 'image');
+  const videos = (media ?? []).filter((m) => m.file_type === 'video');
+  const files = (media ?? []).filter((m) => m.file_type === 'file');
+  const audios = (media ?? []).filter((m) => m.file_type === 'audio');
+
   return (
     <div className="flex h-screen overflow-hidden">
       <div className="flex flex-1 min-w-0 flex-col">
@@ -134,7 +160,7 @@ export default function UserProfile() {
           ) : !profile ? (
             <div className="rounded-xl bg-white p-8 text-center text-slate-500 dark:bg-neutral-800 dark:text-slate-300 shadow-sm">Пользователь не найден</div>
           ) : (
-            <div className="mx-auto max-w-md">
+            <div className="mx-auto max-w-md space-y-4">
               <section className={cardClass} style={cardStyle}>
                 <div className="relative flex flex-col items-center gap-4">
                   {!isOwn && (
@@ -230,6 +256,152 @@ export default function UserProfile() {
                   )}
                 </div>
               </section>
+
+              {!isOwn && (
+                <section className={cardClass} style={cardStyle}>
+                  <h3 className={`mb-3 text-sm font-semibold ${useThemeCard ? 'text-slate-100' : 'text-slate-700 dark:text-slate-200'}`}>
+                    Медиa с пользователем
+                  </h3>
+                  {mediaError && (
+                    <p className={useThemeCard ? 'text-sm text-red-300' : 'text-sm text-red-600 dark:text-red-400'}>
+                      {mediaError}
+                    </p>
+                  )}
+                  {!media && !mediaError && (
+                    <p className={useThemeCard ? 'text-sm text-slate-300' : 'text-sm text-slate-500 dark:text-slate-400'}>
+                      Загрузка медиа...
+                    </p>
+                  )}
+                  {media && media.length === 0 && (
+                    <p className={useThemeCard ? 'text-sm text-slate-400' : 'text-sm text-slate-500 dark:text-slate-400'}>
+                      Пока нет общих медиа.
+                    </p>
+                  )}
+                  {media && media.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <button
+                          type="button"
+                          onClick={() => setMediaTab('photos')}
+                          className={`flex items-center justify-between rounded-xl px-3 py-2 border ${
+                            mediaTab === 'photos'
+                              ? 'border-blue-500 bg-blue-500/10 text-blue-500'
+                              : useThemeCard
+                                ? 'border-white/20 text-slate-200'
+                                : 'border-slate-200 text-slate-700 dark:border-neutral-600 dark:text-slate-200'
+                          }`}
+                        >
+                          <span>Фотографии</span>
+                          <span className="text-xs opacity-80">{photos.length}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMediaTab('videos')}
+                          className={`flex items-center justify-between rounded-xl px-3 py-2 border ${
+                            mediaTab === 'videos'
+                              ? 'border-blue-500 bg-blue-500/10 text-blue-500'
+                              : useThemeCard
+                                ? 'border-white/20 text-slate-200'
+                                : 'border-slate-200 text-slate-700 dark:border-neutral-600 dark:text-slate-200'
+                          }`}
+                        >
+                          <span>Видео</span>
+                          <span className="text-xs opacity-80">{videos.length}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMediaTab('files')}
+                          className={`flex items-center justify-between rounded-xl px-3 py-2 border ${
+                            mediaTab === 'files'
+                              ? 'border-blue-500 bg-blue-500/10 text-blue-500'
+                              : useThemeCard
+                                ? 'border-white/20 text-slate-200'
+                                : 'border-slate-200 text-slate-700 dark:border-neutral-600 dark:text-slate-200'
+                          }`}
+                        >
+                          <span>Файлы</span>
+                          <span className="text-xs opacity-80">{files.length}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMediaTab('audio')}
+                          className={`flex items-center justify-between rounded-xl px-3 py-2 border ${
+                            mediaTab === 'audio'
+                              ? 'border-blue-500 bg-blue-500/10 text-blue-500'
+                              : useThemeCard
+                                ? 'border-white/20 text-slate-200'
+                                : 'border-slate-200 text-slate-700 dark:border-neutral-600 dark:text-slate-200'
+                          }`}
+                        >
+                          <span>Аудио</span>
+                          <span className="text-xs opacity-80">{audios.length}</span>
+                        </button>
+                      </div>
+
+                      {mediaTab === 'photos' && photos.length > 0 && (
+                        <div className="grid grid-cols-3 gap-1">
+                          {photos.map((m) => (
+                            m.file_url && (
+                              <img
+                                key={m.id}
+                                src={resolveUrl(m.file_url)}
+                                alt={m.file_name || ''}
+                                className="h-20 w-full rounded-lg object-cover"
+                              />
+                            )
+                          ))}
+                        </div>
+                      )}
+
+                      {mediaTab === 'videos' && videos.length > 0 && (
+                        <div className="space-y-2">
+                          {videos.map((m) => (
+                            m.file_url && (
+                              <video
+                                key={m.id}
+                                src={resolveUrl(m.file_url)}
+                                controls
+                                className="w-full rounded-lg"
+                              />
+                            )
+                          ))}
+                        </div>
+                      )}
+
+                      {mediaTab === 'files' && files.length > 0 && (
+                        <ul className="space-y-1 text-sm">
+                          {files.map((m) => (
+                            m.file_url && (
+                              <li key={m.id}>
+                                <a
+                                  href={resolveUrl(m.file_url)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className={useThemeCard ? 'text-slate-100 hover:underline' : 'text-blue-600 hover:underline dark:text-blue-400'}
+                                >
+                                  {m.file_name || 'Файл'}
+                                </a>
+                              </li>
+                            )
+                          ))}
+                        </ul>
+                      )}
+
+                      {mediaTab === 'audio' && audios.length > 0 && (
+                        <ul className="space-y-2 text-sm">
+                          {audios.map((m) => (
+                            m.file_url && (
+                              <li key={m.id} className="flex items-center gap-2">
+                                <audio src={resolveUrl(m.file_url)} controls className="w-full" />
+                              </li>
+                            )
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </section>
+              )}
             </div>
           )}
         </main>

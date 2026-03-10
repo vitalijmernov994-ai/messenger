@@ -35,4 +35,10 @@ export const messageService = {
     if (!isParticipant) throw new Error('FORBIDDEN');
     return messageRepository.findByDialog(dialogId);
   },
+
+  async getMediaByDialog(dialogId: string, userId: string): Promise<MessageWithSender[]> {
+    const isParticipant = await dialogService.ensureParticipant(dialogId, userId);
+    if (!isParticipant) throw new Error('FORBIDDEN');
+    return messageRepository.findMediaByDialog(dialogId);
+  },
 };

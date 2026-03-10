@@ -82,5 +82,6 @@ api.post('/dialogs', dialogsController.getOrCreate.bind(dialogsController));
 api.get('/dialogs/:dialogId/messages', messagesController.list.bind(messagesController));
 api.post('/dialogs/:dialogId/messages', messagesController.send.bind(messagesController));
 api.post('/dialogs/:dialogId/media', uploadMessage.single('file'), messagesController.sendMedia.bind(messagesController));
+api.get('/dialogs/:dialogId/media', messagesController.listMedia.bind(messagesController));
 
 export { api };

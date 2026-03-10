@@ -119,6 +119,8 @@ export const messagesApi = {
     }
     return res.json();
   },
+  listMedia: (dialogId: string) =>
+    api<Message[]>(`/api/dialogs/${dialogId}/media`),
 };
 
 export const adminApi = {

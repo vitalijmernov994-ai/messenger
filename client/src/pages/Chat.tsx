@@ -54,6 +54,8 @@ export default function Chat() {
   const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollDown, setShowScrollDown] = useState(false);
 
   function renderAttachment(m: Message) {
     if (!m.file_url) return null;
@@ -185,6 +187,13 @@ export default function Chat() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  function handleScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    const threshold = 40;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+    setShowScrollDown(!atBottom);
+  }
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -471,6 +480,8 @@ export default function Chat() {
       )}
 
       <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
         className={`flex-1 overflow-y-auto p-4 transition-colors duration-200 ${!useThemeCard ? 'bg-slate-50 dark:bg-black' : ''}`}
         style={useThemeCard ? { background: 'var(--theme-bg)' } : undefined}
       >
@@ -628,6 +639,22 @@ export default function Chat() {
       </div>
 
       {menuOpen && <AppSidebar onClose={() => setMenuOpen(false)} />}
+
+      {showScrollDown && !loading && messages.length > 0 && (
+        <button
+          type="button"
+          onClick={() => {
+            const el = messagesContainerRef.current;
+            if (el) {
+              el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+            }
+          }}
+          className="fixed bottom-24 right-5 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--theme-button-bg)] text-[var(--theme-button-text)] shadow-lg"
+          aria-label="Вниз"
+        >
+          ↓
+        </button>
+      )}
     </div>
   );
 }

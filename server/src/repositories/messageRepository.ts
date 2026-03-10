@@ -38,6 +38,20 @@ export const messageRepository = {
     return res.rows;
   },
 
+  async findMediaByDialog(dialogId: string): Promise<MessageWithSender[]> {
+    const res = await query<MessageWithSender>(
+      `SELECT m.id, m.dialog_id, m.sender_id, m.body, m.created_at,
+              m.file_url, m.file_type, m.file_name, m.file_size,
+              u.name AS sender_name, u.email AS sender_email, u.avatar_url AS sender_avatar_url
+       FROM messages m
+       JOIN users u ON u.id = m.sender_id
+       WHERE m.dialog_id = $1 AND m.file_url IS NOT NULL
+       ORDER BY m.created_at DESC`,
+      [dialogId]
+    );
+    return res.rows;
+  },
+
   async findById(id: string): Promise<MessageWithSender | null> {
     const res = await query<MessageWithSender>(
       `SELECT m.id, m.dialog_id, m.sender_id, m.body, m.created_at,

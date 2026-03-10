@@ -171,4 +171,27 @@ export const messagesController = {
       throw e;
     }
   },
+
+  async listMedia(req: Request, res: Response): Promise<void> {
+    const userId = req.user?.userId;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const dialogId = req.params.dialogId;
+    if (!dialogId) {
+      res.status(400).json({ error: 'dialogId required' });
+      return;
+    }
+    try {
+      const items = await messageService.getMediaByDialog(dialogId, userId);
+      res.json(items);
+    } catch (e) {
+      if ((e as Error).message === 'FORBIDDEN') {
+        res.status(403).json({ error: 'Access denied to this dialog' });
+        return;
+      }
+      throw e;
+    }
+  },
 };
