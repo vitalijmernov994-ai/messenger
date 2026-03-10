@@ -341,13 +341,6 @@ export default function Chat() {
               disabled={fileUploading}
             />
           </label>
-          <button
-            type="button"
-            onClick={recording ? stopRecording : startRecording}
-            className={`rounded-xl px-3 py-2 text-sm font-medium ${recording ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'}`}
-          >
-            {recording ? 'Стоп' : '🎤'}
-          </button>
           <input
             type="text"
             value={input}
@@ -357,6 +350,13 @@ export default function Chat() {
             className={`flex-1 rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-shadow duration-200 ${!useThemeCard ? 'border-slate-300 dark:border-neutral-500 dark:bg-neutral-700 dark:text-slate-100 dark:placeholder-slate-400' : ''}`}
             style={useThemeCard ? { background: 'var(--theme-input-bg)', borderColor: 'var(--theme-input-border)', color: 'var(--theme-input-text)' } : undefined}
           />
+          <button
+            type="button"
+            onClick={recording ? stopRecording : startRecording}
+            className={`rounded-xl px-3 py-2 text-sm font-medium ${recording ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'}`}
+          >
+            {recording ? 'Стоп' : '🎤'}
+          </button>
           <button
             type="submit"
             disabled={sending || !input.trim()}
