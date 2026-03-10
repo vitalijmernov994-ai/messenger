@@ -78,7 +78,8 @@ export default function Dialogs() {
           onMenuToggle={() => setMenuOpen((o) => !o)}
         />
 
-        <main className={`flex-1 overflow-y-auto ${!useThemeCard ? 'bg-slate-50 dark:bg-neutral-900' : ''}`}
+        <main
+          className="flex-1 overflow-y-auto"
           style={useThemeCard ? { background: 'var(--theme-bg)' } : undefined}
         >
           {error && (
@@ -92,30 +93,46 @@ export default function Dialogs() {
               <span className={`text-sm ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>Загрузка...</span>
             </div>
           ) : dialogs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 gap-2">
-              <p className={`text-sm ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>Нет активных чатов</p>
-              <p className={`text-xs ${useThemeCard ? 'text-slate-500' : 'text-slate-400 dark:text-slate-600'}`}>Найдите собеседника через «Поиск людей»</p>
+            <div className="flex items-center justify-center py-10">
+              <div className="glass-panel mx-4 w-full max-w-md rounded-2xl px-6 py-5">
+                <p className={`text-sm ${useThemeCard ? 'text-slate-100/80' : 'text-slate-700 dark:text-slate-200'}`}>
+                  Нет активных чатов
+                </p>
+                <p className={`mt-1 text-xs ${useThemeCard ? 'text-slate-300/80' : 'text-slate-500 dark:text-slate-400'}`}>
+                  Найдите собеседника через «Поиск людей»
+                </p>
+              </div>
             </div>
           ) : (
-            <ul className="py-2">
-              {decoratedDialogs.map(({ dialog: d, displayName, avatarUrl }) => (
-                <li key={d.id}>
-                  <Link to={`/chat/${d.id}`} className={rowClass}>
-                    <Avatar name={displayName} avatarUrl={avatarUrl} />
-                    <div className="min-w-0">
-                      <p className={`font-medium truncate ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
-                        {displayName || 'Диалог'}
-                      </p>
-                      {d.other?.public_id && (
-                        <p className={`text-xs truncate ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                          @{d.other.public_id}
+            <div className="mx-auto flex max-w-3xl flex-col gap-3 px-3 py-4">
+              <div className="flex items-baseline justify-between px-1">
+                <h2 className={useThemeCard ? 'text-sm font-semibold text-slate-100/90' : 'text-sm font-semibold text-slate-700 dark:text-slate-100'}>
+                  Диалоги
+                </h2>
+                <span className={useThemeCard ? 'text-xs text-slate-300/80' : 'text-xs text-slate-400 dark:text-slate-500'}>
+                  {dialogs.length} активных
+                </span>
+              </div>
+              <ul className="space-y-2">
+                {decoratedDialogs.map(({ dialog: d, displayName, avatarUrl }) => (
+                  <li key={d.id}>
+                    <Link to={`/chat/${d.id}`} className={rowClass}>
+                      <Avatar name={displayName} avatarUrl={avatarUrl} />
+                      <div className="min-w-0">
+                        <p className={`font-medium truncate ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
+                          {displayName || 'Диалог'}
                         </p>
-                      )}
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                        {d.other?.public_id && (
+                          <p className={`text-xs truncate ${useThemeCard ? 'text-slate-300/80' : 'text-slate-400 dark:text-slate-500'}`}>
+                            @{d.other.public_id}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </main>
       </div>

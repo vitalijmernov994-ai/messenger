@@ -60,7 +60,11 @@ export default function App() {
         </div>
       )}
       <div
-        className={`relative z-10 min-h-screen ${!hasColorBg && !hasMediaBackground ? 'bg-slate-100 dark:bg-black' : ''}`}
+        className={`relative z-10 min-h-screen ${
+          !hasColorBg && !hasMediaBackground
+            ? 'bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'
+            : ''
+        }`}
         style={hasColorBg ? { background: 'transparent' } : undefined}
       >
         <Routes>

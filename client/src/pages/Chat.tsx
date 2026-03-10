@@ -482,7 +482,7 @@ export default function Chat() {
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className={`flex-1 overflow-y-auto p-4 transition-colors duration-200 ${!useThemeCard ? 'bg-slate-50 dark:bg-black' : ''}`}
+        className="flex-1 overflow-y-auto p-4 transition-colors duration-200"
         style={useThemeCard ? { background: 'var(--theme-bg)' } : undefined}
       >
         {loading ? (
