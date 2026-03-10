@@ -64,8 +64,8 @@ export default function Dialogs() {
   }, [dialogs, contactById]);
 
   const rowClass = useThemeCard
-    ? 'flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors cursor-pointer'
-    : 'flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer';
+    ? 'flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/25 hover:bg-black/35 transition-colors cursor-pointer border border-white/10'
+    : 'flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900/40 hover:bg-slate-900/55 transition-colors cursor-pointer border border-slate-800/70';
 
   return (
     <div className="flex h-screen overflow-hidden">

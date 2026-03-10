@@ -90,8 +90,7 @@ export default function Profile() {
         <main className="flex-1 overflow-y-auto p-4">
           <div className="mx-auto max-w-lg">
             <section
-              className={`liquid-card rounded-2xl p-6 transition-colors duration-200`}
-              style={customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
+              className="liquid-card rounded-2xl p-6 transition-colors duration-200"
             >
               <form onSubmit={save} className="space-y-5">
                 {error && (

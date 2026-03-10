@@ -46,8 +46,7 @@ function Modal({
 
 export default function Settings() {
   const { auth, setUser } = useAuth();
-  const { theme, setTheme, customThemeColor, setCustomThemeColor, customBackgroundImage, setCustomBackgroundImage, customBackgroundVideo, setCustomBackgroundVideo, hasGlassUI, effectiveDark } = useTheme();
-  const useThemeCard = customThemeColor && !hasGlassUI;
+  const { theme, setTheme, customThemeColor, setCustomThemeColor, customBackgroundImage, setCustomBackgroundImage, customBackgroundVideo, setCustomBackgroundVideo, effectiveDark } = useTheme();
   const [modal, setModal] = useState<'password' | 'email' | 'theme' | null>(null);
 
   const isLightActive = theme === 'light' && !customThemeColor;
@@ -141,28 +140,25 @@ export default function Settings() {
           type="button"
           onClick={() => setModal('password')}
           className="liquid-card flex flex-col items-center gap-2 rounded-2xl p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          style={useThemeCard || customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
         >
           <span className="text-2xl">🔐</span>
-          <span className={`font-medium ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>Сменить пароль</span>
+          <span className="font-medium text-slate-100">Сменить пароль</span>
         </button>
         <button
           type="button"
           onClick={() => setModal('email')}
           className="liquid-card flex flex-col items-center gap-2 rounded-2xl p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          style={useThemeCard || customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
         >
-          <span className="text-2xl">✉</span>
-          <span className={`font-medium ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>Сменить почту</span>
+          <span className="text-2xl text-slate-100">✉</span>
+          <span className="font-medium text-slate-100">Сменить почту</span>
         </button>
         <button
           type="button"
           onClick={() => setModal('theme')}
           className="liquid-card flex flex-col items-center gap-2 rounded-2xl p-6 shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          style={useThemeCard || customThemeColor ? { background: 'rgba(var(--theme-bg-rgb, 15,23,42),0.86)' } : undefined}
         >
           <span className="text-2xl">🌓</span>
-          <span className={`font-medium ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>Сменить тему</span>
+          <span className="font-medium text-slate-100">Сменить тему</span>
         </button>
       </div>
 

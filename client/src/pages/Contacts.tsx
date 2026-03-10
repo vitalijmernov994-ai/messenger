@@ -51,7 +51,11 @@ export default function Contacts() {
     }
   }
 
-  const rowClass = `flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${useThemeCard ? 'hover:bg-white/10' : 'hover:bg-slate-100 dark:hover:bg-neutral-700/60'}`;
+  const rowClass = `flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${
+    useThemeCard
+      ? 'border-white/10 bg-black/25 hover:bg-black/35'
+      : 'border-slate-800/70 bg-slate-900/40 hover:bg-slate-900/55'
+  }`;
 
   return (
     <div className="flex h-screen overflow-hidden">
