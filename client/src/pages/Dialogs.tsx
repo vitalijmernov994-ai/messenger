@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AppHeader } from '../components/AppHeader';
 import { AppSidebar } from '../components/AppSidebar';
 import { useTheme } from '../context/ThemeContext';
-import { dialogsApi } from '../api';
+import { contactsApi, dialogsApi } from '../api';
 import { getAvatarColor } from '../lib/avatarColor';
 
 type DialogItem = { id: string; created_at: string; other?: { id: string; name: string; public_id?: string; avatar_url?: string | null } };
+type ContactLite = { nickname: string | null; local_photo: string | null };
 
 const SERVER = import.meta.env.VITE_API_URL || '';
 function resolveUrl(url: string | null | undefined) {
@@ -29,18 +30,38 @@ export default function Dialogs() {
   const { hasGlassUI, customThemeColor } = useTheme();
   const useThemeCard = customThemeColor && !hasGlassUI;
   const [dialogs, setDialogs] = useState<DialogItem[]>([]);
+  const [contactById, setContactById] = useState<Record<string, ContactLite>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    dialogsApi.list()
-      .then((d) => { if (!cancelled) setDialogs(d); })
+    Promise.all([
+      dialogsApi.list(),
+      contactsApi.list().catch(() => []),
+    ])
+      .then(([d, contacts]) => {
+        if (cancelled) return;
+        setDialogs(d);
+        const map: Record<string, ContactLite> = {};
+        for (const c of contacts) map[c.contact_id] = { nickname: c.nickname ?? null, local_photo: c.local_photo ?? null };
+        setContactById(map);
+      })
       .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : 'Ошибка загрузки'); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
+  const decoratedDialogs = useMemo(() => {
+    return dialogs.map((d) => {
+      const otherId = d.other?.id;
+      const contact = otherId ? contactById[otherId] : undefined;
+      const displayName = (contact?.nickname ?? d.other?.name) ?? '?';
+      const avatar = contact?.local_photo || d.other?.avatar_url || null;
+      return { dialog: d, displayName, avatarUrl: avatar };
+    });
+  }, [dialogs, contactById]);
 
   const rowClass = useThemeCard
     ? 'flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors cursor-pointer'
@@ -77,13 +98,13 @@ export default function Dialogs() {
             </div>
           ) : (
             <ul className="py-2">
-              {dialogs.map((d) => (
+              {decoratedDialogs.map(({ dialog: d, displayName, avatarUrl }) => (
                 <li key={d.id}>
                   <Link to={`/chat/${d.id}`} className={rowClass}>
-                    <Avatar name={d.other?.name ?? '?'} avatarUrl={d.other?.avatar_url} />
+                    <Avatar name={displayName} avatarUrl={avatarUrl} />
                     <div className="min-w-0">
                       <p className={`font-medium truncate ${useThemeCard ? 'text-slate-100' : 'text-slate-800 dark:text-slate-100'}`}>
-                        {d.other?.name ?? 'Диалог'}
+                        {displayName || 'Диалог'}
                       </p>
                       {d.other?.public_id && (
                         <p className={`text-xs truncate ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
