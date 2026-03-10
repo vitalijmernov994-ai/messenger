@@ -39,7 +39,6 @@ export default function Chat() {
   const [recording, setRecording] = useState(false);
   const [videoRecording, setVideoRecording] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [vu, setVu] = useState(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -55,46 +54,6 @@ export default function Chat() {
   const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
-
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-      if (vuRafRef.current !== null) cancelAnimationFrame(vuRafRef.current);
-      audioCtxRef.current?.close().catch(() => {});
-    };
-  }, []);
-
-  function stopPlayback() {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    setPlayingId(null);
-  }
-
-  async function toggleVoice(m: Message) {
-    if (!m.file_url) return;
-    if (playingId === m.id) {
-      stopPlayback();
-      return;
-    }
-    stopPlayback();
-    const el = new Audio(avatarUrl(m.file_url));
-    audioRef.current = el;
-    setPlayingId(m.id);
-    el.addEventListener('ended', () => {
-      setPlayingId((prev) => (prev === m.id ? null : prev));
-      audioRef.current = null;
-    });
-    try {
-      await el.play();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Не удалось воспроизвести аудио');
-      stopPlayback();
-    }
-  }
 
   function renderAttachment(m: Message) {
     if (!m.file_url) return null;
@@ -115,22 +74,29 @@ export default function Chat() {
     if (m.file_type === 'audio') {
       const isPlaying = playingId === m.id;
       return (
-        <button
-          type="button"
-          onClick={() => void toggleVoice(m)}
-          className={`flex items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors ${
-            isPlaying ? 'bg-black/15 dark:bg-white/10' : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10'
-          }`}
-          aria-label={isPlaying ? 'Остановить голосовое' : 'Воспроизвести голосовое'}
-        >
-          <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isPlaying ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'}`}>
-            {isPlaying ? '■' : '▶'}
-          </div>
-          <div className="min-w-0">
-            <div className="text-sm font-medium truncate">{m.file_name || 'Голосовое сообщение'}</div>
-            <div className="text-xs opacity-70">{isPlaying ? 'Воспроизведение…' : 'Нажмите, чтобы воспроизвести'}</div>
-          </div>
-        </button>
+        <>
+          <audio
+            id={`audio-${m.id}`}
+            src={avatarUrl(m.file_url)}
+            preload="metadata"
+          />
+          <button
+            type="button"
+            onClick={() => void toggleVoice(m.id)}
+            className={`flex items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors ${
+              isPlaying ? 'bg-black/15 dark:bg-white/10' : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10'
+            }`}
+            aria-label={isPlaying ? 'Остановить голосовое' : 'Воспроизвести голосовое'}
+          >
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isPlaying ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'}`}>
+              {isPlaying ? '■' : '▶'}
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium truncate">{m.file_name || 'Голосовое сообщение'}</div>
+              <div className="text-xs opacity-70">{isPlaying ? 'Воспроизведение…' : 'Нажмите, чтобы воспроизвести'}</div>
+            </div>
+          </button>
+        </>
       );
     }
     return (
@@ -425,6 +391,33 @@ export default function Chat() {
     }
     if (!recording) {
       void startRecording();
+    }
+  }
+
+  async function toggleVoice(messageId: string) {
+    const el = document.getElementById(`audio-${messageId}`) as HTMLAudioElement | null;
+    if (!el) return;
+    if (playingId === messageId) {
+      el.pause();
+      el.currentTime = 0;
+      setPlayingId(null);
+      return;
+    }
+    if (playingId) {
+      const prev = document.getElementById(`audio-${playingId}`) as HTMLAudioElement | null;
+      if (prev) {
+        prev.pause();
+        prev.currentTime = 0;
+      }
+    }
+    try {
+      await el.play();
+      setPlayingId(messageId);
+      el.onended = () => {
+        setPlayingId((prev) => (prev === messageId ? null : prev));
+      };
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Не удалось воспроизвести аудио');
     }
   }
 
