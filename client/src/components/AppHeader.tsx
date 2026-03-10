@@ -28,7 +28,7 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
     return (
       <header
         className={`flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3 transition-colors duration-200 ${
-          useThemeHeader ? '' : hasGlassUI ? 'glass-panel border-slate-200/50 dark:border-neutral-700/50' : 'border-slate-200 bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-sm dark:shadow-black/20'
+          useThemeHeader ? '' : 'glass-panel border-slate-200/40 dark:border-slate-800/70'
         }`}
         style={useThemeHeader ? { background: 'var(--theme-header)', borderColor: 'var(--theme-input-border)', color: '#f8fafc' } : undefined}
       >
@@ -98,7 +98,7 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
   return (
     <header
       className={`grid shrink-0 grid-cols-3 items-center gap-2 border-b px-4 py-3 transition-colors duration-200 ${
-        useThemeHeader ? '' : hasGlassUI ? 'glass-panel border-slate-200/50 dark:border-neutral-700/50' : 'border-slate-200 bg-white dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-sm dark:shadow-black/20'
+        useThemeHeader ? '' : 'glass-panel border-slate-200/40 dark:border-slate-800/70'
       }`}
       style={useThemeHeader ? { background: 'var(--theme-header)', borderColor: 'var(--theme-input-border)', color: '#f8fafc' } : undefined}
     >

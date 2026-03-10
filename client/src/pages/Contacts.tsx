@@ -64,46 +64,52 @@ export default function Contacts() {
           onMenuToggle={() => setMenuOpen((o) => !o)}
         />
 
-        <div className={`px-4 py-3 border-b shrink-0 ${useThemeCard ? 'border-white/10' : 'border-slate-200 dark:border-neutral-700'}`}
-          style={useThemeCard ? { background: 'var(--theme-card)' } : undefined}
-        >
-          <div className={`flex items-center gap-2 rounded-xl px-3 py-2 ${useThemeCard ? 'bg-white/10' : 'bg-slate-100 dark:bg-neutral-700/60'}`}>
-            <Search className={`h-4 w-4 shrink-0 ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`} />
-            <input
-              type="text"
-              placeholder="Поиск по контактам..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={`flex-1 bg-transparent text-sm focus:outline-none ${useThemeCard ? 'text-slate-200 placeholder-slate-500' : 'text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500'}`}
-            />
-          </div>
-        </div>
-
-        <main className={`flex-1 overflow-y-auto ${!useThemeCard ? 'bg-slate-50 dark:bg-neutral-900' : ''}`}
+        <main
+          className="flex-1 overflow-y-auto"
           style={useThemeCard ? { background: 'var(--theme-bg)' } : undefined}
         >
-          {error && (
-            <div className="mx-4 mt-3 rounded-lg bg-red-100 px-4 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300" role="alert">{error}</div>
-          )}
+          <div className="mx-auto max-w-3xl px-4 pt-4 pb-6 space-y-4">
+            <div
+              className={`glass-panel rounded-2xl px-4 py-3 shadow-sm ${
+                useThemeCard ? '' : ''
+              }`}
+              style={useThemeCard ? { background: 'var(--theme-card)' } : undefined}
+            >
+              <div className="flex items-center gap-2">
+                <Search className={`h-4 w-4 shrink-0 ${useThemeCard ? 'text-slate-300' : 'text-slate-400 dark:text-slate-500'}`} />
+                <input
+                  type="text"
+                  placeholder="Поиск по контактам..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className={`flex-1 bg-transparent text-sm focus:outline-none ${useThemeCard ? 'text-slate-100 placeholder-slate-400' : 'text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500'}`}
+                />
+              </div>
+            </div>
+            {error && (
+              <div className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300" role="alert">
+                {error}
+              </div>
+            )}
 
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <span className={`text-sm ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>Загрузка...</span>
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 gap-2">
-              <p className={`text-sm ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                {search ? 'Ничего не найдено' : 'Контактов пока нет'}
-              </p>
-              {!search && (
-                <p className={`text-xs ${useThemeCard ? 'text-slate-500' : 'text-slate-400 dark:text-slate-600'}`}>
-                  Добавьте контакты через профиль пользователя
+            {loading ? (
+              <div className="flex items-center justify-center h-32">
+                <span className={`text-sm ${useThemeCard ? 'text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>Загрузка...</span>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="glass-panel mt-2 rounded-2xl px-5 py-4">
+                <p className={`text-sm ${useThemeCard ? 'text-slate-100/80' : 'text-slate-700 dark:text-slate-200'}`}>
+                  {search ? 'Ничего не найдено' : 'Контактов пока нет'}
                 </p>
-              )}
-            </div>
-          ) : (
-            <ul className="py-2">
-              {filtered.map((c) => {
+                {!search && (
+                  <p className={`mt-1 text-xs ${useThemeCard ? 'text-slate-300/80' : 'text-slate-500 dark:text-slate-400'}`}>
+                    Добавьте контакты через профиль пользователя
+                  </p>
+                )}
+              </div>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {filtered.map((c) => {
                 const displayName = c.nickname ?? c.name;
                 const photo = c.local_photo ? resolveUrl(c.local_photo) : resolveUrl(c.avatar_url);
                 return (
@@ -134,8 +140,9 @@ export default function Contacts() {
                   </li>
                 );
               })}
-            </ul>
-          )}
+              </ul>
+            )}
+          </div>
         </main>
       </div>
 
