@@ -41,10 +41,12 @@ export default function Chat() {
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     if (!dialogId) return;
     setLoading(true);
+    loadingRef.current = true;
     setError('');
     messagesApi
       .list(dialogId)
@@ -63,7 +65,10 @@ export default function Chat() {
         }
       })
       .catch((e) => setError(e instanceof Error ? e.message : 'Ошибка'))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        loadingRef.current = false;
+      });
   }, [dialogId]);
 
   useEffect(() => {
@@ -80,6 +85,34 @@ export default function Chat() {
     });
     return unsub;
   }, [dialogId, onNewMessage]);
+
+  useEffect(() => {
+    if (!dialogId) return;
+    let cancelled = false;
+
+    async function tick(currentDialogId: string) {
+      if (cancelled || loadingRef.current) return;
+      try {
+        const list = await messagesApi.list(currentDialogId);
+        setMessages((prev) => {
+          if (prev.length === list.length && prev[prev.length - 1]?.id === list[list.length - 1]?.id) {
+            return prev;
+          }
+          return list;
+        });
+      } catch {
+        // ignore polling errors
+      }
+    }
+
+    const id = window.setInterval(() => {
+      if (dialogId) void tick(dialogId);
+    }, 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [dialogId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
