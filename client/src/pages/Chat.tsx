@@ -331,16 +331,7 @@ export default function Chat() {
         className={`border-t p-2 ${useThemeCard ? '' : hasGlassUI ? 'glass-panel border-slate-200/50 dark:border-neutral-700/50' : 'bg-neutral-800 dark:border-neutral-600 dark:shadow-lg dark:shadow-black/20'}`}
         style={useThemeCard ? { background: 'var(--theme-card)', borderColor: 'var(--theme-input-border)' } : undefined}
       >
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Сообщение..."
-            maxLength={10000}
-            className={`flex-1 rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-shadow duration-200 ${!useThemeCard ? 'border-slate-300 dark:border-neutral-500 dark:bg-neutral-700 dark:text-slate-100 dark:placeholder-slate-400' : ''}`}
-            style={useThemeCard ? { background: 'var(--theme-input-bg)', borderColor: 'var(--theme-input-border)', color: 'var(--theme-input-text)' } : undefined}
-          />
+        <div className="flex gap-2 items-center">
           <label className="flex items-center rounded-xl border px-3 py-2 text-sm cursor-pointer bg-white hover:bg-slate-50 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:border-neutral-500">
             <span className="select-none">{fileUploading ? 'Файл...' : '📎'}</span>
             <input
@@ -357,6 +348,15 @@ export default function Chat() {
           >
             {recording ? 'Стоп' : '🎤'}
           </button>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Сообщение..."
+            maxLength={10000}
+            className={`flex-1 rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-shadow duration-200 ${!useThemeCard ? 'border-slate-300 dark:border-neutral-500 dark:bg-neutral-700 dark:text-slate-100 dark:placeholder-slate-400' : ''}`}
+            style={useThemeCard ? { background: 'var(--theme-input-bg)', borderColor: 'var(--theme-input-border)', color: 'var(--theme-input-text)' } : undefined}
+          />
           <button
             type="submit"
             disabled={sending || !input.trim()}
