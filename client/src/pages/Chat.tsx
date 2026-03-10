@@ -39,6 +39,13 @@ export default function Chat() {
   const [recording, setRecording] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [vu, setVu] = useState(0);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const vuRafRef = useRef<number | null>(null);
+  const [callModalOpen, setCallModalOpen] = useState(false);
+  const [recordLocked, setRecordLocked] = useState(false);
+  const dragStartYRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -52,6 +59,8 @@ export default function Chat() {
     return () => {
       audioRef.current?.pause();
       audioRef.current = null;
+      if (vuRafRef.current !== null) cancelAnimationFrame(vuRafRef.current);
+      audioCtxRef.current?.close().catch(() => {});
     };
   }, []);
 
@@ -249,11 +258,40 @@ export default function Chat() {
       const chunks: BlobPart[] = [];
       const rec = new MediaRecorder(stream);
       mediaRecorderRef.current = rec;
+
+      // voice activity (VU meter)
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const source = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyser;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const loop = () => {
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = data[i] - 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / data.length);
+        const level = Math.min(1, rms / 50);
+        setVu(level);
+        vuRafRef.current = requestAnimationFrame(loop);
+      };
+      vuRafRef.current = requestAnimationFrame(loop);
       rec.ondataavailable = (ev) => {
         if (ev.data.size > 0) chunks.push(ev.data);
       };
       rec.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
+        if (vuRafRef.current !== null) cancelAnimationFrame(vuRafRef.current);
+        vuRafRef.current = null;
+        setVu(0);
+        audioCtxRef.current?.close().catch(() => {});
+        audioCtxRef.current = null;
+        analyserRef.current = null;
         if (!dialogId) return;
         try {
           const blob = new Blob(chunks, { type: 'audio/webm' });
@@ -268,6 +306,7 @@ export default function Chat() {
       };
       rec.start();
       setRecording(true);
+      setRecordLocked(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось получить доступ к микрофону');
     }
@@ -277,6 +316,45 @@ export default function Chat() {
     const rec = mediaRecorderRef.current;
     if (!rec || rec.state !== 'recording') return;
     rec.stop();
+  }
+
+  function handleMicDown(e: React.PointerEvent<HTMLButtonElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragStartYRef.current = e.clientY;
+    if (!recording) {
+      void startRecording();
+    }
+  }
+
+  function handleMicMove(e: React.PointerEvent<HTMLButtonElement>) {
+    if (!recording || dragStartYRef.current === null) return;
+    const dy = dragStartYRef.current - e.clientY;
+    if (dy > 40 && !recordLocked) {
+      setRecordLocked(true);
+    }
+  }
+
+  function handleMicUp(e: React.PointerEvent<HTMLButtonElement>) {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    dragStartYRef.current = null;
+    if (!recording) return;
+    if (!recordLocked) {
+      // короткое нажатие или без фиксации — остановить и отправить
+      stopRecording();
+    }
+    // при зафиксированной записи пользователь нажимает ещё раз,
+    // чтобы остановить и отправить (обрабатывается в onClick)
+  }
+
+  function handleMicClick() {
+    if (recording && recordLocked) {
+      stopRecording();
+      setRecordLocked(false);
+      return;
+    }
+    if (!recording) {
+      void startRecording();
+    }
   }
 
   if (!dialogId) return null;
@@ -292,6 +370,7 @@ export default function Chat() {
           onMenuToggle={() => setMenuOpen((o) => !o)}
           chatOther={otherUser ? { ...otherUser, name: otherUser.displayName } : undefined}
           onChatAvatarClick={() => setAvatarModalOpen(true)}
+            onCallClick={() => setCallModalOpen(true)}
         />
 
         {avatarModalOpen && otherUser && (
@@ -399,6 +478,24 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
+      {callModalOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-sm rounded-2xl bg-neutral-900 text-slate-100 p-6 shadow-xl flex flex-col items-center gap-4">
+            <div className="text-lg font-semibold">Идёт звонок</div>
+            <div className="text-sm opacity-80">
+              Это имитация звонка внутри чата. Реальный голосовой канал можно добавить позже.
+            </div>
+            <button
+              type="button"
+              onClick={() => setCallModalOpen(false)}
+              className="mt-2 rounded-full bg-red-600 px-6 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              Завершить
+            </button>
+          </div>
+        </div>
+      )}
+
       <form
         onSubmit={send}
         className={`border-t p-2 ${useThemeCard ? '' : hasGlassUI ? 'glass-panel border-slate-200/50 dark:border-neutral-700/50' : 'bg-neutral-800 dark:border-neutral-600 dark:shadow-lg dark:shadow-black/20'}`}
@@ -425,10 +522,18 @@ export default function Chat() {
           />
           <button
             type="button"
-            onClick={recording ? stopRecording : startRecording}
-            className={`rounded-xl px-3 py-2 text-sm font-medium ${recording ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'}`}
+            onClick={handleMicClick}
+            onPointerDown={handleMicDown}
+            onPointerMove={handleMicMove}
+            onPointerUp={handleMicUp}
+            className={`relative rounded-xl px-3 py-2 text-sm font-medium transition-shadow ${
+              recording
+                ? 'bg-red-600 text-white'
+                : 'bg-slate-200 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'
+            }`}
+            style={recording ? { boxShadow: `0 0 0 0.15rem rgba(248, 113, 113, ${0.3 + vu * 0.5}), 0 0 20px rgba(248,113,113,${vu})` } : undefined}
           >
-            {recording ? 'Стоп' : '🎤'}
+            {recordLocked ? '⏺' : recording ? 'Стоп' : '🎤'}
           </button>
           <button
             type="submit"

@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Menu, LogOut } from 'lucide-react';
+import { ArrowLeft, Menu, LogOut, Phone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { getAvatarColor } from '../lib/avatarColor';
@@ -15,9 +15,10 @@ type AppHeaderProps = {
   /** Для экрана чата: аватар собеседника и ссылка на профиль в заголовке */
   chatOther?: ChatOther;
   onChatAvatarClick?: () => void;
+  onCallClick?: () => void;
 };
 
-export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuToggle, chatOther, onChatAvatarClick }: AppHeaderProps) {
+export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuToggle, chatOther, onChatAvatarClick, onCallClick }: AppHeaderProps) {
   const { auth, logout } = useAuth();
   const { hasGlassUI, customThemeColor } = useTheme();
   const navigate = useNavigate();
@@ -65,7 +66,17 @@ export function AppHeader({ title, showBack, showMenu = true, menuOpen, onMenuTo
           </Link>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-1">
+          {onCallClick && (
+            <button
+              type="button"
+              onClick={onCallClick}
+              className={`flex rounded-lg p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${useThemeHeader ? 'text-slate-200 hover:bg-white/15' : 'hover:bg-slate-100 dark:hover:bg-neutral-900'}`}
+              aria-label="Позвонить"
+            >
+              <Phone className={`h-5 w-5 ${useThemeHeader ? 'text-slate-200' : 'text-slate-600 dark:text-slate-400'}`} />
+            </button>
+          )}
           {showMenu ? (
             <button
               type="button"
