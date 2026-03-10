@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { authMiddleware } from '../middleware/auth.js';
 import { adminOnly } from '../middleware/admin.js';
@@ -12,7 +13,8 @@ import { adminController } from '../controllers/adminController.js';
 import { contactController } from '../controllers/contactController.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.resolve(__dirname, '../../uploads');
+const uploadsDir = path.resolve(process.cwd(), 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
 
 const avatarStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadsDir),
