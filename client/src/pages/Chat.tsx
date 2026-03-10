@@ -538,9 +538,12 @@ export default function Chat() {
           <button
             type="submit"
             disabled={sending || !input.trim()}
-            className={`rounded-xl px-4 py-2 font-medium disabled:opacity-50 transition-colors duration-200 ${hasGlassUI ? 'glass-button' : 'bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]'}`}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full font-medium disabled:opacity-50 transition-colors duration-200 ${
+              hasGlassUI ? 'glass-button' : 'bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]'
+            }`}
+            aria-label="Отправить"
           >
-            Отправить
+            ➤
           </button>
         </div>
       </form>
