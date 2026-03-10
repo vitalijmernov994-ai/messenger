@@ -70,6 +70,17 @@ export const userRepository = {
     return res.rows;
   },
 
+  async listAllWithBanStatus(): Promise<{ id: string; email: string; name: string; role: string; created_at: Date; description?: string | null; is_banned: boolean }[]> {
+    const res = await query<{ id: string; email: string; name: string; role: string; created_at: Date; description?: string | null; is_banned: boolean }>(
+      `SELECT
+         u.id, u.email, u.name, u.role, u.created_at, u.description,
+         EXISTS(SELECT 1 FROM banned_emails b WHERE b.email = LOWER(u.email)) AS is_banned
+       FROM users u
+       ORDER BY u.created_at DESC`
+    );
+    return res.rows;
+  },
+
   async update(id: string, data: { name?: string; email?: string; description?: string | null; avatar_url?: string | null }): Promise<void> {
     if (data.email !== undefined) {
       const existing = await query<{ id: string }>('SELECT id FROM users WHERE email = $1 AND id != $2', [data.email, id]);

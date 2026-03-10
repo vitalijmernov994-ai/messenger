@@ -21,6 +21,15 @@ export async function migrate(): Promise<void> {
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS description TEXT');
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT');
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS banned_emails (
+      email      VARCHAR(255) PRIMARY KEY,
+      reason     TEXT,
+      banned_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      banned_by  UUID REFERENCES users(id) ON DELETE SET NULL
+    )
+  `);
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_banned_emails_at ON banned_emails(banned_at DESC)');
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS contacts (
       owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       contact_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

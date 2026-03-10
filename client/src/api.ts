@@ -106,7 +106,20 @@ export const messagesApi = {
 
 export const adminApi = {
   listUsers: () =>
-    api<{ id: string; email: string; name: string; role: string; created_at: string }[]>('/api/admin/users'),
+    api<{ id: string; email: string; name: string; role: string; created_at: string; is_banned: boolean }[]>('/api/admin/users'),
+  listBannedEmails: () =>
+    api<{ email: string; reason: string | null; banned_at: string; banned_by: string | null; user_id: string | null; user_name: string | null }[]>(
+      '/api/admin/banned-emails'
+    ),
+  banEmail: (email: string, reason?: string | null) =>
+    api<{ ok: boolean }>('/api/admin/banned-emails', {
+      method: 'POST',
+      body: JSON.stringify({ email, reason: reason ?? null }),
+    }),
+  unbanEmail: (email: string) =>
+    api<{ ok: boolean }>(`/api/admin/banned-emails/${encodeURIComponent(email)}`, {
+      method: 'DELETE',
+    }),
 };
 
 export interface User {

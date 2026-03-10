@@ -38,6 +38,10 @@ export const authController = {
       );
       res.status(201).json(result);
     } catch (e) {
+      if ((e as Error).message === 'EMAIL_BANNED') {
+        res.status(403).json({ error: 'Email is banned' });
+        return;
+      }
       if ((e as Error).message === 'USER_EXISTS') {
         res.status(409).json({ error: 'User with this email already exists' });
         return;
@@ -57,6 +61,10 @@ export const authController = {
       const result = await authService.login(email, password);
       res.json(result);
     } catch (e) {
+      if ((e as Error).message === 'EMAIL_BANNED') {
+        res.status(403).json({ error: 'Email is banned' });
+        return;
+      }
       if ((e as Error).message === 'INVALID_CREDENTIALS') {
         res.status(401).json({ error: 'Invalid email or password' });
         return;

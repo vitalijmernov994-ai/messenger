@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { userRepository } from '../repositories/userRepository.js';
 import type { User, UserRole } from '../types.js';
+import { banRepository } from '../repositories/banRepository.js';
 
 const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
@@ -22,6 +23,8 @@ export const authService = {
     name: string,
     role: UserRole = 'user'
   ): Promise<{ user: User; token: string }> {
+    const banned = await banRepository.isEmailBanned(email);
+    if (banned) throw new Error('EMAIL_BANNED');
     const existing = await userRepository.findByEmail(email);
     if (existing) throw new Error('USER_EXISTS');
     const hashed = await this.hashPassword(password);
@@ -38,6 +41,8 @@ export const authService = {
   },
 
   async login(email: string, password: string): Promise<{ user: User; token: string }> {
+    const banned = await banRepository.isEmailBanned(email);
+    if (banned) throw new Error('EMAIL_BANNED');
     const found = await userRepository.findByEmail(email);
     if (!found) throw new Error('INVALID_CREDENTIALS');
     const ok = await this.comparePassword(password, found.password);
