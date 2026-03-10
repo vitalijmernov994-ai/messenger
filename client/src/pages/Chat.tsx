@@ -37,6 +37,8 @@ export default function Chat() {
   const [fileUploading, setFileUploading] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [recording, setRecording] = useState(false);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -45,6 +47,93 @@ export default function Chat() {
   const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  function stopPlayback() {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    setPlayingId(null);
+  }
+
+  async function toggleVoice(m: Message) {
+    if (!m.file_url) return;
+    if (playingId === m.id) {
+      stopPlayback();
+      return;
+    }
+    stopPlayback();
+    const el = new Audio(avatarUrl(m.file_url));
+    audioRef.current = el;
+    setPlayingId(m.id);
+    el.addEventListener('ended', () => {
+      setPlayingId((prev) => (prev === m.id ? null : prev));
+      audioRef.current = null;
+    });
+    try {
+      await el.play();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Не удалось воспроизвести аудио');
+      stopPlayback();
+    }
+  }
+
+  function renderAttachment(m: Message) {
+    if (!m.file_url) return null;
+    if (m.file_type === 'image') {
+      return (
+        <div className="max-w-xs">
+          <img src={avatarUrl(m.file_url)} alt={m.file_name || ''} className="max-h-64 w-full rounded-lg object-contain" />
+        </div>
+      );
+    }
+    if (m.file_type === 'video') {
+      return (
+        <div className="max-w-xs">
+          <video src={avatarUrl(m.file_url)} controls className="max-h-64 w-full rounded-lg" />
+        </div>
+      );
+    }
+    if (m.file_type === 'audio') {
+      const isPlaying = playingId === m.id;
+      return (
+        <button
+          type="button"
+          onClick={() => void toggleVoice(m)}
+          className={`flex items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors ${
+            isPlaying ? 'bg-black/15 dark:bg-white/10' : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10'
+          }`}
+          aria-label={isPlaying ? 'Остановить голосовое' : 'Воспроизвести голосовое'}
+        >
+          <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isPlaying ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-800 dark:bg-neutral-700 dark:text-slate-100'}`}>
+            {isPlaying ? '■' : '▶'}
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-medium truncate">{m.file_name || 'Голосовое сообщение'}</div>
+            <div className="text-xs opacity-70">{isPlaying ? 'Воспроизведение…' : 'Нажмите, чтобы воспроизвести'}</div>
+          </div>
+        </button>
+      );
+    }
+    return (
+      <a
+        href={avatarUrl(m.file_url)}
+        target="_blank"
+        rel="noreferrer"
+        className="text-sm text-blue-500 hover:underline break-all"
+      >
+        {m.file_name || 'Файл'}
+      </a>
+    );
+  }
 
   useEffect(() => {
     if (!dialogId) return;
@@ -256,13 +345,18 @@ export default function Chat() {
                 ? otherUser.displayName
                 : rawName;
 
+              const attachment = renderAttachment(m);
+
               if (isOwn) {
                 return (
                   <li key={m.id} className="flex justify-end px-1">
                     <div
                       className="max-w-[70%] rounded-2xl rounded-tr-sm px-4 py-2 bg-[var(--theme-button-bg)] text-[var(--theme-button-text)]"
                     >
-                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                      <div className="space-y-1">
+                        {attachment}
+                        {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+                      </div>
                       <p className="mt-1 text-right text-xs opacity-70">{formatDate(m.created_at)}</p>
                     </div>
                   </li>
@@ -292,29 +386,8 @@ export default function Chat() {
                         useThemeCard ? 'bg-[var(--theme-input-bg)] text-slate-100' : 'bg-white text-slate-800 dark:bg-neutral-800 dark:text-slate-100 shadow-sm'
                       }`}
                     >
-                      {m.file_url && (
-                        <div className="max-w-xs">
-                          {m.file_type === 'image' ? (
-                            <img src={avatarUrl(m.file_url)} alt={m.file_name || ''} className="max-h-64 w-full rounded-lg object-contain" />
-                          ) : m.file_type === 'video' ? (
-                            <video src={avatarUrl(m.file_url)} controls className="max-h-64 w-full rounded-lg" />
-                          ) : m.file_type === 'audio' ? (
-                            <audio src={avatarUrl(m.file_url)} controls className="w-full" />
-                          ) : (
-                            <a
-                              href={avatarUrl(m.file_url)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-sm text-blue-500 hover:underline break-all"
-                            >
-                              {m.file_name || 'Файл'}
-                            </a>
-                          )}
-                        </div>
-                      )}
-                      {m.body && (
-                        <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      )}
+                      {attachment}
+                      {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                       <p className="mt-1 text-xs opacity-60">{formatDate(m.created_at)}</p>
                     </div>
                   </div>
